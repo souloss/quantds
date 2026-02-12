@@ -14,15 +14,24 @@
 
 ## Supported Data Sources
 
-| Provider | Kline | Spot Quote | Instrument List | Profile | Financial | News |
+<!-- START_SUPPORTED_TABLE -->
+
+| 数据源 (Provider) | K线 (Kline) | 实时行情 (Spot) | 证券列表 (Instrument) | 证券详情 (Profile) | 财务数据 (Financial) | 公告资讯 (News) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **EastMoney** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Sina** | ✅ | ✅ | - | - | - | - |
-| **Tencent** | ✅ | ✅ | - | - | - | - |
-| **Xueqiu** | ✅ | ✅ | - | - | - | - |
-| **Tushare** | ✅ | - | ✅ | ✅ | ✅ | - |
-| **Cninfo** | - | - | ✅ | - | - | ✅ |
-| **SSE/SZSE/BSE** | - | - | ✅ | - | - | - |
+| **Binance** (币安) | ✅ | ✅ | - | - | - | - |
+| **BSE** (北交所) | - | - | ✅ | - | - | - |
+| **Cninfo** (巨潮资讯) | - | - | ✅ | - | - | ✅ |
+| **EastMoney** (东方财富) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **EastMoney HK** (东财港股) | ✅ | ✅ | - | - | - | - |
+| **Sina** (新浪财经) | ✅ | ✅ | - | - | - | - |
+| **SSE** (上交所) | - | - | ✅ | - | - | - |
+| **SZSE** (深交所) | - | - | ✅ | - | - | - |
+| **Tencent** (腾讯财经) | ✅ | ✅ | - | - | - | - |
+| **Tushare** (Tushare Pro) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Xueqiu** (雪球) | ✅ | ✅ | ✅ | ✅ | - | - |
+| **Yahoo Finance** | ✅ | ✅ | - | - | - | - |
+
+<!-- END_SUPPORTED_TABLE -->
 
 ## Directory Structure
 
