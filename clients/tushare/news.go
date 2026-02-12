@@ -103,3 +103,62 @@ func (c *Client) GetCctvNews(ctx context.Context, params *CctvNewsParams) ([]Cct
 
 	return rows, record, nil
 }
+
+// AnnouncementParams 上市公司公告查询参数
+// Tushare API: disclosure
+type AnnouncementParams struct {
+	TsCode    string // 股票代码
+	AnnDate   string // 公告日期 (YYYYMMDD)
+	StartDate string // 开始日期 (YYYYMMDD)
+	EndDate   string // 结束日期 (YYYYMMDD)
+}
+
+func (p *AnnouncementParams) ToMap() map[string]string {
+	m := make(map[string]string)
+	if p == nil {
+		return m
+	}
+	if p.TsCode != "" {
+		m["ts_code"] = p.TsCode
+	}
+	if p.AnnDate != "" {
+		m["ann_date"] = p.AnnDate
+	}
+	if p.StartDate != "" {
+		m["start_date"] = p.StartDate
+	}
+	if p.EndDate != "" {
+		m["end_date"] = p.EndDate
+	}
+	return m
+}
+
+// AnnouncementRow 上市公司公告数据行
+type AnnouncementRow struct {
+	TsCode  string // 股票代码
+	AnnDate string // 公告日期
+	Title   string // 标题
+	Content string // 内容 (Tushare disclosure usually doesn't return full content, but we can check fields)
+}
+
+// GetAnnouncements 获取上市公司公告
+func (c *Client) GetAnnouncements(ctx context.Context, params *AnnouncementParams) ([]AnnouncementRow, *request.Record, error) {
+	// 字段: ts_code,ann_date,title,content
+	data, record, err := c.post(ctx, "disclosure", params.ToMap(), "ts_code,ann_date,title,content")
+	if err != nil {
+		return nil, record, err
+	}
+
+	idx := fieldIndex(data.Fields)
+	rows := make([]AnnouncementRow, 0, len(data.Items))
+	for _, item := range data.Items {
+		rows = append(rows, AnnouncementRow{
+			TsCode:  getStr(idx, item, "ts_code"),
+			AnnDate: getStr(idx, item, "ann_date"),
+			Title:   getStr(idx, item, "title"),
+			Content: getStr(idx, item, "content"),
+		})
+	}
+
+	return rows, record, nil
+}

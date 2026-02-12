@@ -100,6 +100,11 @@ func NewClient(httpClient request.Client, opts ...Option) *Client {
 	return c
 }
 
+// Token 返回当前 Token
+func (c *Client) Token() string {
+	return c.token
+}
+
 // Close 关闭客户端。
 func (c *Client) Close() {
 	c.http.Close()
