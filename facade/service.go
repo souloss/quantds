@@ -5,24 +5,30 @@ import (
 	"fmt"
 	"time"
 
+	binanceadapter "github.com/souloss/quantds/adapters/binance"
 	bseadapter "github.com/souloss/quantds/adapters/bse"
 	cninfoadapter "github.com/souloss/quantds/adapters/cninfo"
 	eastmoneyadapter "github.com/souloss/quantds/adapters/eastmoney"
+	eastmoneyhkadapter "github.com/souloss/quantds/adapters/eastmoneyhk"
 	sinaadapter "github.com/souloss/quantds/adapters/sina"
 	sseadapter "github.com/souloss/quantds/adapters/sse"
 	szseadapter "github.com/souloss/quantds/adapters/szse"
 	tencentadapter "github.com/souloss/quantds/adapters/tencent"
 	tushareadapter "github.com/souloss/quantds/adapters/tushare"
 	xueqiuadapter "github.com/souloss/quantds/adapters/xueqiu"
+	yahooadapter "github.com/souloss/quantds/adapters/yahoo"
+	binanceclient "github.com/souloss/quantds/clients/binance"
 	bseclient "github.com/souloss/quantds/clients/bse"
 	cninfoclient "github.com/souloss/quantds/clients/cninfo"
 	eastmoneyclient "github.com/souloss/quantds/clients/eastmoney"
+	eastmoneyhkclient "github.com/souloss/quantds/clients/eastmoneyhk"
 	sinaclient "github.com/souloss/quantds/clients/sina"
 	sseclient "github.com/souloss/quantds/clients/sse"
 	szseclient "github.com/souloss/quantds/clients/szse"
 	tencentclient "github.com/souloss/quantds/clients/tencent"
 	tushareclient "github.com/souloss/quantds/clients/tushare"
 	xueqiuclient "github.com/souloss/quantds/clients/xueqiu"
+	yahooclient "github.com/souloss/quantds/clients/yahoo"
 	"github.com/souloss/quantds/domain"
 	"github.com/souloss/quantds/domain/announcement"
 	"github.com/souloss/quantds/domain/financial"
@@ -219,6 +225,99 @@ func (s *Service) initManagers() {
 			manager.WithPriority(PriorityHigh),
 		),
 	)
+
+	// ========== 美股 (US) ==========
+	// K线 - 支持 yahoo
+	s.klineManagers[domain.MarketUS] = manager.NewManager[kline.Request, kline.Response](
+		manager.WithTwoLevelCache[kline.Request, kline.Response](time.Minute, CacheTTLKline),
+		manager.WithMetrics[kline.Request, kline.Response](s.metrics),
+		manager.WithProvider[kline.Request, kline.Response](
+			yahooadapter.NewKlineAdapter(yahooclient.NewClient(s.httpClient)),
+			manager.WithPriority(PriorityHighest),
+		),
+	)
+
+	// 实时行情 - 支持 yahoo
+	s.spotManagers[domain.MarketUS] = manager.NewManager[spot.Request, spot.Response](
+		manager.WithTwoLevelCache[spot.Request, spot.Response](time.Minute, CacheTTLSpot),
+		manager.WithMetrics[spot.Request, spot.Response](s.metrics),
+		manager.WithProvider[spot.Request, spot.Response](
+			yahooadapter.NewSpotAdapter(yahooclient.NewClient(s.httpClient)),
+			manager.WithPriority(PriorityHighest),
+		),
+	)
+
+	// 证券列表 - 支持 yahoo
+	s.instrumentManagers[domain.MarketUS] = manager.NewManager[instrument.Request, instrument.Response](
+		manager.WithTwoLevelCache[instrument.Request, instrument.Response](time.Minute, CacheTTLList),
+		manager.WithMetrics[instrument.Request, instrument.Response](s.metrics),
+		manager.WithProvider[instrument.Request, instrument.Response](
+			yahooadapter.NewInstrumentAdapter(yahooclient.NewClient(s.httpClient)),
+			manager.WithPriority(PriorityHighest),
+		),
+	)
+
+	// ========== 港股 (HK) ==========
+	// K线 - 支持 eastmoneyhk
+	s.klineManagers[domain.MarketHK] = manager.NewManager[kline.Request, kline.Response](
+		manager.WithTwoLevelCache[kline.Request, kline.Response](time.Minute, CacheTTLKline),
+		manager.WithMetrics[kline.Request, kline.Response](s.metrics),
+		manager.WithProvider[kline.Request, kline.Response](
+			eastmoneyhkadapter.NewKlineAdapter(eastmoneyhkclient.NewClient(s.httpClient)),
+			manager.WithPriority(PriorityHighest),
+		),
+	)
+
+	// 实时行情 - 支持 eastmoneyhk
+	s.spotManagers[domain.MarketHK] = manager.NewManager[spot.Request, spot.Response](
+		manager.WithTwoLevelCache[spot.Request, spot.Response](time.Minute, CacheTTLSpot),
+		manager.WithMetrics[spot.Request, spot.Response](s.metrics),
+		manager.WithProvider[spot.Request, spot.Response](
+			eastmoneyhkadapter.NewSpotAdapter(eastmoneyhkclient.NewClient(s.httpClient)),
+			manager.WithPriority(PriorityHighest),
+		),
+	)
+
+	// 证券列表 - 支持 eastmoneyhk
+	s.instrumentManagers[domain.MarketHK] = manager.NewManager[instrument.Request, instrument.Response](
+		manager.WithTwoLevelCache[instrument.Request, instrument.Response](time.Minute, CacheTTLList),
+		manager.WithMetrics[instrument.Request, instrument.Response](s.metrics),
+		manager.WithProvider[instrument.Request, instrument.Response](
+			eastmoneyhkadapter.NewInstrumentAdapter(eastmoneyhkclient.NewClient(s.httpClient)),
+			manager.WithPriority(PriorityHighest),
+		),
+	)
+
+	// ========== 加密货币 (Crypto) ==========
+	// K线 - 支持 binance
+	s.klineManagers[domain.MarketCrypto] = manager.NewManager[kline.Request, kline.Response](
+		manager.WithTwoLevelCache[kline.Request, kline.Response](time.Minute, CacheTTLKline),
+		manager.WithMetrics[kline.Request, kline.Response](s.metrics),
+		manager.WithProvider[kline.Request, kline.Response](
+			binanceadapter.NewKlineAdapter(binanceclient.NewClient(s.httpClient)),
+			manager.WithPriority(PriorityHighest),
+		),
+	)
+
+	// 实时行情 - 支持 binance
+	s.spotManagers[domain.MarketCrypto] = manager.NewManager[spot.Request, spot.Response](
+		manager.WithTwoLevelCache[spot.Request, spot.Response](time.Minute, CacheTTLSpot),
+		manager.WithMetrics[spot.Request, spot.Response](s.metrics),
+		manager.WithProvider[spot.Request, spot.Response](
+			binanceadapter.NewSpotAdapter(binanceclient.NewClient(s.httpClient)),
+			manager.WithPriority(PriorityHighest),
+		),
+	)
+
+	// 证券列表 - 支持 binance
+	s.instrumentManagers[domain.MarketCrypto] = manager.NewManager[instrument.Request, instrument.Response](
+		manager.WithTwoLevelCache[instrument.Request, instrument.Response](time.Minute, CacheTTLList),
+		manager.WithMetrics[instrument.Request, instrument.Response](s.metrics),
+		manager.WithProvider[instrument.Request, instrument.Response](
+			binanceadapter.NewInstrumentAdapter(binanceclient.NewClient(s.httpClient)),
+			manager.WithPriority(PriorityHighest),
+		),
+	)
 }
 
 // getMarketFromSymbol 从 symbol 解析市场。
@@ -282,12 +381,32 @@ func (s *Service) GetSpotWithTrace(ctx context.Context, req spot.Request) (spot.
 // GetInstruments 获取证券列表。
 func (s *Service) GetInstruments(ctx context.Context, req instrument.Request) (instrument.Response, error) {
 	market := domain.MarketCN
+
+	// Determine market from various sources
+	if req.Market != "" {
+		// Use Market field (e.g., "USDT" for crypto, or market code)
+		switch req.Market {
+		case "US", "NASDAQ", "NYSE", "AMEX":
+			market = domain.MarketUS
+		case "HK", "HKEX":
+			market = domain.MarketHK
+		case "CRYPTO", "BINANCE":
+			market = domain.MarketCrypto
+		default:
+			// Check if it's a crypto quote asset (USDT, BUSD, etc.)
+			if binanceclient.GetQuoteAsset(req.Market+"USDT") != "" {
+				market = domain.MarketCrypto
+			}
+		}
+	}
+
 	if req.Exchange != "" {
 		var sym domain.Symbol
 		if err := sym.Parse("000001." + string(req.Exchange)); err == nil {
 			market = sym.Market
 		}
 	}
+
 	m, ok := s.instrumentManagers[market]
 	if !ok {
 		return instrument.Response{}, fmt.Errorf("unsupported market for instruments: %s", market)

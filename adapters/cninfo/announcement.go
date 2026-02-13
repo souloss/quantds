@@ -3,6 +3,7 @@ package cninfo
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/souloss/quantds/clients/cninfo"
@@ -12,19 +13,27 @@ import (
 	"github.com/souloss/quantds/request"
 )
 
-// AnnouncementAdapter adapts CNINFO announcement/news data.
+// AnnouncementAdapter adapts CNInfo announcement data
 type AnnouncementAdapter struct {
 	client *cninfo.Client
 }
 
-// NewAnnouncementAdapter creates a new announcement adapter.
+// NewAnnouncementAdapter creates a new announcement adapter
 func NewAnnouncementAdapter(client *cninfo.Client) *AnnouncementAdapter {
 	return &AnnouncementAdapter{client: client}
 }
 
-func (a *AnnouncementAdapter) Name() string                      { return Name }
-func (a *AnnouncementAdapter) SupportedMarkets() []domain.Market { return supportedMarkets }
+// Name returns the adapter name
+func (a *AnnouncementAdapter) Name() string {
+	return Name
+}
 
+// SupportedMarkets returns supported markets
+func (a *AnnouncementAdapter) SupportedMarkets() []domain.Market {
+	return supportedMarkets
+}
+
+// CanHandle checks if the adapter can handle the symbol
 func (a *AnnouncementAdapter) CanHandle(symbol string) bool {
 	if symbol == "" {
 		return true // Support querying all announcements
@@ -41,6 +50,7 @@ func (a *AnnouncementAdapter) CanHandle(symbol string) bool {
 	return false
 }
 
+// Fetch retrieves announcement data
 func (a *AnnouncementAdapter) Fetch(ctx context.Context, _ request.Client, req announcement.Request) (announcement.Response, *manager.RequestTrace, error) {
 	trace := manager.NewRequestTrace(Name)
 
@@ -90,22 +100,32 @@ func (a *AnnouncementAdapter) Fetch(ctx context.Context, _ request.Client, req a
 		return announcement.Response{}, trace, err
 	}
 
-	items := make([]announcement.Announcement, 0, len(rows))
+	announcements := make([]announcement.Announcement, 0, len(rows))
 	for _, row := range rows {
 		publishTime := ""
 		if row.AnnouncementTime > 0 {
 			publishTime = time.Unix(row.AnnouncementTime/1000, 0).Format("2006-01-02 15:04:05")
 		}
+		
 		url := ""
 		if row.AdjunctURL != "" {
 			url = fmt.Sprintf("http://static.cninfo.com.cn/%s", row.AdjunctURL)
 		}
-		items = append(items, announcement.Announcement{
+
+		itemType := announcement.TypeNews
+		if strings.Contains(row.AnnouncementTitle, "报告") || strings.Contains(row.AnnouncementTitle, "年报") || strings.Contains(row.AnnouncementTitle, "季报") {
+			itemType = announcement.TypeReport
+		} else if strings.Contains(row.AnnouncementTitle, "公告") {
+			itemType = announcement.TypeRegulatory
+		}
+
+		announcements = append(announcements, announcement.Announcement{
+			ID:          row.AnnouncementID,
 			Title:       row.AnnouncementTitle,
 			PublishTime: publishTime,
-			Source:      "cninfo",
+			Source:      Name,
 			URL:         url,
-			Type:        announcement.TypeNews,
+			Type:        itemType,
 			Code:        row.SecCode,
 			Name:        row.SecName,
 		})
@@ -116,10 +136,12 @@ func (a *AnnouncementAdapter) Fetch(ctx context.Context, _ request.Client, req a
 	trace.Finish()
 	return announcement.Response{
 		Symbol:     req.Symbol,
-		Data:       items,
+		Data:       announcements,
 		Source:     Name,
 		HasMore:    hasMore,
 		TotalCount: total,
+		PageIndex:  pageNum,
+		PageSize:   pageSize,
 	}, trace, nil
 }
 

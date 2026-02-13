@@ -1,3 +1,39 @@
+// Package cninfo provides a client for the CNInfo (巨潮资讯) data source.
+//
+// CNInfo is the official information disclosure platform for China's securities market,
+// operated by Shenzhen Securities Information Co., Ltd. It provides APIs for:
+//   - Stock/Security lists and search
+//   - Company announcements and filings
+//   - Regulatory disclosures
+//   - IPO prospectuses
+//
+// API Features:
+//   - No authentication required for public APIs
+//   - Supports A-shares (SH, SZ, BJ), B-shares, and funds
+//   - Official regulatory data source
+//   - Historical data available
+//
+// Limitations:
+//   - APIs may be rate-limited
+//   - Some endpoints may require specific headers
+//   - API structure may change over time
+//
+// Example:
+//
+//	client := cninfo.NewClient(nil)
+//	defer client.Close()
+//
+//	// Search for securities
+//	result, record, err := client.GetOrgID(ctx, &cninfo.OrgIDParams{
+//	    KeyWord: "000001",
+//	})
+//
+//	// Get company announcements
+//	announcements, total, record, err := client.QueryNews(ctx, &cninfo.NewsQueryParams{
+//	    Stock: "000001,gssz0000001",
+//	    PageNum: 1,
+//	    PageSize: 30,
+//	})
 package cninfo
 
 import (
@@ -5,11 +41,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/souloss/quantds/request"
 )
 
-const BaseURL = "http://www.cninfo.com.cn"
+const (
+	BaseURL         = "http://www.cninfo.com.cn"
+	SearchAPI       = "http://www.cninfo.com.cn/new/information/topSearch/query"
+	AnnouncementAPI = "http://www.cninfo.com.cn/new/hisAnnouncement/query"
+)
 
 type Client struct {
 	http    request.Client
@@ -17,12 +58,6 @@ type Client struct {
 }
 
 type Option func(*Client)
-
-func WithBaseURL(url string) Option {
-	return func(c *Client) {
-		c.baseURL = url
-	}
-}
 
 func NewClient(httpClient request.Client, opts ...Option) *Client {
 	if httpClient == nil {
@@ -42,30 +77,29 @@ func (c *Client) Close() {
 	c.http.Close()
 }
 
-func (c *Client) do(ctx context.Context, method, path string, form url.Values, result any) (*request.Record, error) {
-	u := c.baseURL + path
+// do makes an HTTP request to the CNInfo API
+func (c *Client) do(ctx context.Context, method, path string, params url.Values, result interface{}) (*request.Record, error) {
 	var body []byte
-	var contentType string
+	if params != nil {
+		body = []byte(params.Encode())
+	}
 
-	if form != nil {
-		body = []byte(form.Encode())
-		contentType = "application/x-www-form-urlencoded"
+	urlStr := c.baseURL + path
+	// Handle full URLs (if path already includes protocol)
+	if strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://") {
+		urlStr = path
 	}
 
 	req := request.Request{
 		Method: method,
-		URL:    u,
+		URL:    urlStr,
 		Headers: map[string]string{
 			"User-Agent":       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-			"Accept":           "application/json, text/javascript, */*",
-			"Accept-Language":  "zh-CN,zh;q=0.9,en;q=0.8",
-			"Referer":          c.baseURL + "/new/disclosure/list/notice",
+			"Referer":          "http://www.cninfo.com.cn/",
+			"Content-Type":     "application/x-www-form-urlencoded; charset=UTF-8",
 			"X-Requested-With": "XMLHttpRequest",
 		},
-	}
-	if len(body) > 0 {
-		req.Headers["Content-Type"] = contentType
-		req.Body = body
+		Body: body,
 	}
 
 	resp, record, err := c.http.Do(ctx, req)
@@ -73,14 +107,38 @@ func (c *Client) do(ctx context.Context, method, path string, form url.Values, r
 		return record, err
 	}
 
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return record, fmt.Errorf("http status %d", resp.StatusCode)
+	if resp.StatusCode != 200 {
+		return record, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
-	if result != nil {
-		if err := json.Unmarshal(resp.Body, result); err != nil {
-			return record, fmt.Errorf("decode response: %w", err)
+	// Check if the response is JSONP (wrapped in callback)
+	bodyContent := string(resp.Body)
+	if strings.HasPrefix(bodyContent, "jQuery") || strings.HasPrefix(bodyContent, "callback") {
+		start := strings.Index(bodyContent, "(")
+		end := strings.LastIndex(bodyContent, ")")
+		if start > 0 && end > start {
+			bodyContent = bodyContent[start+1 : end]
+			resp.Body = []byte(bodyContent)
 		}
+	}
+
+	// Some responses have metadata wrapper, try to unwrap
+	var genericResp struct {
+		Code int             `json:"code"`
+		Data json.RawMessage `json:"data"`
+	}
+	if err := json.Unmarshal(resp.Body, &genericResp); err == nil {
+		if genericResp.Code == 0 && len(genericResp.Data) > 0 {
+			// Use the data field
+			if err := json.Unmarshal(genericResp.Data, result); err != nil {
+				return record, err
+			}
+			return record, nil
+		}
+	}
+
+	if err := json.Unmarshal(resp.Body, result); err != nil {
+		return record, err
 	}
 
 	return record, nil
