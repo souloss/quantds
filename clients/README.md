@@ -2,7 +2,17 @@
 
 This directory contains client implementations for various financial data providers, covering multiple markets (Crypto, Stocks, Forex, etc.) and asset classes.
 
-The goal is to provide a unified, type-safe, and reliable way to access external APIs for quantitative data analysis.
+## 🎯 Primary Goal: Domain Alignment
+
+The **primary goal** of this module is to provide data that fulfills the requirements defined in the `domain` module. While clients are low-level API wrappers, their implementation should be guided by the needs of the core business logic.
+
+### Guidelines for Domain Alignment
+
+1.  **Consult Domain Definitions**: Before implementing a client, always review the `domain/` directory to understand what data models and interfaces are required by the system.
+2.  **Prioritize Domain Needs**: When choosing which API endpoints to implement first, prioritize those that map directly to core domain concepts (e.g., K-line history, real-time quotes, asset lists).
+3.  **Data Compatibility**: While client-specific request/response structs should match the external API exactly, keep the domain models in mind. Ensure that the data retrieved can be losslessly or easily converted to the corresponding domain types.
+
+---
 
 ## 🌟 Core Philosophy
 
@@ -29,8 +39,8 @@ clients/
 
 | File | Purpose |
 |------|---------|
-| `client.go` | `Client` struct definition, `NewClient` constructor, base configuration (URL, Auth). |
-| `<resource>.go` | Implementation of specific API endpoints (e.g., `ticker.go`, `kline.go`, `financials.go`). |
+| `client.go` | `Client` struct definition, `NewClient` constructor, base configuration. |
+| `<resource>.go` | **Raw API Implementation**: Type-safe wrappers for specific API endpoints (e.g., `ticker.go`, `candles.go`). |
 | `<resource>_test.go` | **Live integration tests** for the corresponding resource file. |
 | `types.go` | (Optional) Shared data structures if used across multiple files. |
 
@@ -40,7 +50,7 @@ clients/
 Do not dump all methods into a single file. Group methods by resource or functionality.
 
 - **Bad**: `api.go` containing 20 different methods.
-- **Good**: `quote.go` (Real-time price), `historical.go` (History), `search.go` (Symbol lookup).
+- **Good**: `ticker.go` (Real-time price), `candles.go` (History), `coins_list.go` (Symbol lookup).
 
 ### 2. Type Safety & Constants
 Avoid "magic strings" and untyped maps (`map[string]interface{}`).
@@ -112,6 +122,7 @@ This system is extensible. When adding a new provider, consider:
 ## 📝 Contribution Checklist
 
 Before submitting a new client or feature:
+- [ ] Checked `domain/` directory to understand current data requirements.
 - [ ] Created dedicated file for the resource (e.g., `dividends.go`).
 - [ ] Defined strong types for Request and Response.
 - [ ] Added `_test.go` file with a live test case.
