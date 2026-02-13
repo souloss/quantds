@@ -49,16 +49,16 @@ func (e *RequestError) Is(target error) bool {
 func ClassifyError(err error, statusCode int) *RequestError {
 	if err == nil {
 		if statusCode >= 500 {
-			return &RequestError{Type: ErrorTypeServer, StatusCode: statusCode}
+			return &RequestError{Type: ErrorTypeServer, StatusCode: statusCode, Message: "server error"}
 		}
 		if statusCode == 429 {
-			return &RequestError{Type: ErrorTypeRateLimited, StatusCode: statusCode}
+			return &RequestError{Type: ErrorTypeRateLimited, StatusCode: statusCode, Message: "rate limited"}
 		}
 		if statusCode == 401 || statusCode == 403 {
-			return &RequestError{Type: ErrorTypeAuth, StatusCode: statusCode}
+			return &RequestError{Type: ErrorTypeAuth, StatusCode: statusCode, Message: "authentication error"}
 		}
 		if statusCode >= 400 {
-			return &RequestError{Type: ErrorTypeClient, StatusCode: statusCode}
+			return &RequestError{Type: ErrorTypeClient, StatusCode: statusCode, Message: "client error"}
 		}
 		return nil
 	}
