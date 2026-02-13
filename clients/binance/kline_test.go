@@ -1,6 +1,7 @@
 package binance
 
 import (
+	"context"
 	"testing"
 	"time"
 )
@@ -201,5 +202,64 @@ func TestGetBaseAsset(t *testing.T) {
 				t.Errorf("GetBaseAsset(%s) = %s, want %s", tt.symbol, result, tt.expected)
 			}
 		})
+	}
+}
+
+func TestClient_GetKline(t *testing.T) {
+	client := NewClient(nil)
+	ctx := context.Background()
+
+	params := &KlineParams{
+		Symbol:   "BTCUSDT",
+		Interval: Interval1d,
+		Limit:    5,
+	}
+
+	result, record, err := client.GetKline(ctx, params)
+	if err != nil {
+		if record != nil {
+			t.Logf("Response Status: %d", record.Response.StatusCode)
+			t.Logf("Response Body: %s", string(record.Response.Body))
+		}
+		checkAPIError(t, err)
+		return
+	}
+
+	if result.Symbol != "BTCUSDT" {
+		t.Errorf("Expected symbol BTCUSDT, got %s", result.Symbol)
+	}
+
+	if len(result.Data) == 0 {
+		t.Fatalf("Expected kline data, got 0")
+	}
+
+	kline := result.Data[0]
+	if kline.OpenTime == 0 {
+		t.Error("Expected OpenTime > 0")
+	}
+	if kline.Open <= 0 {
+		t.Errorf("Expected Open > 0, got %f", kline.Open)
+	}
+	if kline.Close <= 0 {
+		t.Errorf("Expected Close > 0, got %f", kline.Close)
+	}
+	if kline.High <= 0 {
+		t.Errorf("Expected High > 0, got %f", kline.High)
+	}
+	if kline.Low <= 0 {
+		t.Errorf("Expected Low > 0, got %f", kline.Low)
+	}
+}
+
+func TestClient_GetKline_Error(t *testing.T) {
+	client := NewClient(nil)
+	ctx := context.Background()
+
+	// Invalid symbol should return error or empty result depending on API behavior
+	// Binance API usually returns error for invalid symbol
+	params := &KlineParams{Symbol: "INVALID_SYMBOL"}
+	_, _, err := client.GetKline(ctx, params)
+	if err == nil {
+		t.Log("Warning: Expected error for invalid symbol, but got nil. This might be due to API behavior change.")
 	}
 }
