@@ -77,7 +77,7 @@ func (a *InstrumentAdapter) Fetch(ctx context.Context, _ request.Client, req ins
 			Code:      data.Code,
 			Name:      data.Name,
 			Exchange:  domain.ExchangeHKEX,
-			Market:    "HK",
+			Market:    string(domain.MarketHK),
 			ListDate:  data.ListDate,
 			Status:    status,
 			AssetType: instrument.AssetTypeStock,

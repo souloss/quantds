@@ -8,13 +8,13 @@ import (
 func TestClient_WithBaseURL(t *testing.T) {
 	// Note: aws.okx.com sometimes has certificate issues or is blocked.
 	// This test mainly verifies that the BaseURL option works correctly in the client struct.
-	client := NewClient(nil, WithBaseURL(AwsBaseURL))
-	
+	client := NewClient(WithBaseURL(AwsBaseURL))
+
 	if client.BaseURL != AwsBaseURL {
 		t.Errorf("Expected BaseURL %s, got %s", AwsBaseURL, client.BaseURL)
 	}
 
-	// We skip the actual network call if it fails due to network/cert issues, 
+	// We skip the actual network call if it fails due to network/cert issues,
 	// as we've already verified the functionality in TestClient_GetTicker with the default URL.
 	ctx := context.Background()
 	params := &TickerRequest{

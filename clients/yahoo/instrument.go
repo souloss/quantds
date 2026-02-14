@@ -186,18 +186,11 @@ func parseSearchResponse(body []byte) (*InstrumentResult, error) {
 	}, nil
 }
 
-// InstrumentParams is an alias for instrument search parameters
-type InstrumentParamsAlias = InstrumentParams
-
-// InstrumentResultAlias is an alias for instrument result
-type InstrumentResultAlias = InstrumentResult
-
-// InstrumentDataAlias is an alias for instrument data
-type InstrumentDataAlias = InstrumentData
-
 // GetInstrumentsByExchange retrieves instruments filtered by exchange
+// Uses the exchange name as search query to find relevant instruments
 func (c *Client) GetInstrumentsByExchange(ctx context.Context, exchange string) (*InstrumentResult, *request.Record, error) {
 	params := &InstrumentParams{
+		Query:    exchange, // Use exchange name as search query
 		Exchange: exchange,
 		Limit:    100,
 	}

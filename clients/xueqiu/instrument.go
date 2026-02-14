@@ -120,23 +120,12 @@ func (c *Client) GetStockList(ctx context.Context, params *StockListParams) (*St
 	query.Set("page", strconv.Itoa(params.Page))
 	query.Set("size", strconv.Itoa(params.Size))
 
-	reqURL := fmt.Sprintf("https://stock.xueqiu.com%s?%s", StockListAPI, query.Encode())
-
-	headers := map[string]string{
-		"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-		"Referer":    "https://xueqiu.com/",
-	}
-	if c.cookie != "" {
-		headers["Cookie"] = c.cookie
-	}
-	if c.token != "" {
-		headers["X-Token"] = c.token
-	}
+	reqURL := fmt.Sprintf("%s%s?%s", BaseURL, StockListAPI, query.Encode())
 
 	req := request.Request{
 		Method:  "GET",
 		URL:     reqURL,
-		Headers: headers,
+		Headers: c.buildHeaders(),
 	}
 
 	resp, record, err := c.http.Do(ctx, req)

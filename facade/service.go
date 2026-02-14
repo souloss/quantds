@@ -17,6 +17,7 @@ import (
 	tushareadapter "github.com/souloss/quantds/adapters/tushare"
 	xueqiuadapter "github.com/souloss/quantds/adapters/xueqiu"
 	yahooadapter "github.com/souloss/quantds/adapters/yahoo"
+	okxadapter "github.com/souloss/quantds/adapters/okx"
 	binanceclient "github.com/souloss/quantds/clients/binance"
 	bseclient "github.com/souloss/quantds/clients/bse"
 	cninfoclient "github.com/souloss/quantds/clients/cninfo"
@@ -29,6 +30,7 @@ import (
 	tushareclient "github.com/souloss/quantds/clients/tushare"
 	xueqiuclient "github.com/souloss/quantds/clients/xueqiu"
 	yahooclient "github.com/souloss/quantds/clients/yahoo"
+	okxclient "github.com/souloss/quantds/clients/okx"
 	"github.com/souloss/quantds/domain"
 	"github.com/souloss/quantds/domain/announcement"
 	"github.com/souloss/quantds/domain/financial"
@@ -106,23 +108,23 @@ func (s *Service) initManagers() {
 		manager.WithTwoLevelCache[kline.Request, kline.Response](time.Minute, CacheTTLKline),
 		manager.WithMetrics[kline.Request, kline.Response](s.metrics),
 		manager.WithProvider[kline.Request, kline.Response](
-			eastmoneyadapter.NewKlineAdapter(eastmoneyclient.NewClient(s.httpClient)),
+			eastmoneyadapter.NewKlineAdapter(eastmoneyclient.NewClient(eastmoneyclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHighest),
 		),
 		manager.WithProvider[kline.Request, kline.Response](
-			sinaadapter.NewKlineAdapter(sinaclient.NewClient(s.httpClient)),
+			sinaadapter.NewKlineAdapter(sinaclient.NewClient(sinaclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHigh),
 		),
 		manager.WithProvider[kline.Request, kline.Response](
-			tencentadapter.NewKlineAdapter(tencentclient.NewClient(s.httpClient)),
+			tencentadapter.NewKlineAdapter(tencentclient.NewClient(tencentclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityMedium),
 		),
 		manager.WithProvider[kline.Request, kline.Response](
-			tushareadapter.NewKlineAdapter(tushareclient.NewClient(s.httpClient)),
+			tushareadapter.NewKlineAdapter(tushareclient.NewClient(tushareclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityLow),
 		),
 		manager.WithProvider[kline.Request, kline.Response](
-			xueqiuadapter.NewKlineAdapter(xueqiuclient.NewClient(s.httpClient)),
+			xueqiuadapter.NewKlineAdapter(xueqiuclient.NewClient(xueqiuclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityLowest),
 		),
 	)
@@ -133,19 +135,19 @@ func (s *Service) initManagers() {
 		manager.WithTwoLevelCache[spot.Request, spot.Response](time.Minute, CacheTTLSpot),
 		manager.WithMetrics[spot.Request, spot.Response](s.metrics),
 		manager.WithProvider[spot.Request, spot.Response](
-			sinaadapter.NewSpotAdapter(sinaclient.NewClient(s.httpClient)),
+			sinaadapter.NewSpotAdapter(sinaclient.NewClient(sinaclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHighest),
 		),
 		manager.WithProvider[spot.Request, spot.Response](
-			tencentadapter.NewSpotAdapter(tencentclient.NewClient(s.httpClient)),
+			tencentadapter.NewSpotAdapter(tencentclient.NewClient(tencentclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHigh),
 		),
 		manager.WithProvider[spot.Request, spot.Response](
-			eastmoneyadapter.NewSpotAdapter(eastmoneyclient.NewClient(s.httpClient)),
+			eastmoneyadapter.NewSpotAdapter(eastmoneyclient.NewClient(eastmoneyclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityMedium),
 		),
 		manager.WithProvider[spot.Request, spot.Response](
-			xueqiuadapter.NewSpotAdapter(xueqiuclient.NewClient(s.httpClient)),
+			xueqiuadapter.NewSpotAdapter(xueqiuclient.NewClient(xueqiuclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityLow),
 		),
 	)
@@ -156,27 +158,27 @@ func (s *Service) initManagers() {
 		manager.WithTwoLevelCache[instrument.Request, instrument.Response](time.Minute, CacheTTLList),
 		manager.WithMetrics[instrument.Request, instrument.Response](s.metrics),
 		manager.WithProvider[instrument.Request, instrument.Response](
-			eastmoneyadapter.NewInstrumentAdapter(eastmoneyclient.NewClient(s.httpClient)),
+			eastmoneyadapter.NewInstrumentAdapter(eastmoneyclient.NewClient(eastmoneyclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHighest),
 		),
 		manager.WithProvider[instrument.Request, instrument.Response](
-			tushareadapter.NewInstrumentAdapter(tushareclient.NewClient(s.httpClient)),
+			tushareadapter.NewInstrumentAdapter(tushareclient.NewClient(tushareclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHigh),
 		),
 		manager.WithProvider[instrument.Request, instrument.Response](
-			cninfoadapter.NewInstrumentAdapter(cninfoclient.NewClient(s.httpClient)),
+			cninfoadapter.NewInstrumentAdapter(cninfoclient.NewClient(cninfoclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityMedium),
 		),
 		manager.WithProvider[instrument.Request, instrument.Response](
-			sseadapter.NewInstrumentAdapter(sseclient.NewClient(s.httpClient)),
+			sseadapter.NewInstrumentAdapter(sseclient.NewClient(sseclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityLow),
 		),
 		manager.WithProvider[instrument.Request, instrument.Response](
-			szseadapter.NewInstrumentAdapter(szseclient.NewClient(s.httpClient)),
+			szseadapter.NewInstrumentAdapter(szseclient.NewClient(szseclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityLow),
 		),
 		manager.WithProvider[instrument.Request, instrument.Response](
-			bseadapter.NewInstrumentAdapter(bseclient.NewClient(s.httpClient)),
+			bseadapter.NewInstrumentAdapter(bseclient.NewClient(bseclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityLowest),
 		),
 	)
@@ -187,11 +189,11 @@ func (s *Service) initManagers() {
 		manager.WithTwoLevelCache[profile.Request, profile.Response](time.Minute, CacheTTLList),
 		manager.WithMetrics[profile.Request, profile.Response](s.metrics),
 		manager.WithProvider[profile.Request, profile.Response](
-			eastmoneyadapter.NewProfileAdapter(eastmoneyclient.NewClient(s.httpClient)),
+			eastmoneyadapter.NewProfileAdapter(eastmoneyclient.NewClient(eastmoneyclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHighest),
 		),
 		manager.WithProvider[profile.Request, profile.Response](
-			tushareadapter.NewProfileAdapter(tushareclient.NewClient(s.httpClient)),
+			tushareadapter.NewProfileAdapter(tushareclient.NewClient(tushareclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityMedium),
 		),
 	)
@@ -202,11 +204,11 @@ func (s *Service) initManagers() {
 		manager.WithTwoLevelCache[financial.Request, financial.Response](time.Minute, CacheTTLList),
 		manager.WithMetrics[financial.Request, financial.Response](s.metrics),
 		manager.WithProvider[financial.Request, financial.Response](
-			eastmoneyadapter.NewFinancialAdapter(eastmoneyclient.NewClient(s.httpClient)),
+			eastmoneyadapter.NewFinancialAdapter(eastmoneyclient.NewClient(eastmoneyclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHighest),
 		),
 		manager.WithProvider[financial.Request, financial.Response](
-			tushareadapter.NewFinancialAdapter(tushareclient.NewClient(s.httpClient)),
+			tushareadapter.NewFinancialAdapter(tushareclient.NewClient(tushareclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityMedium),
 		),
 	)
@@ -217,11 +219,11 @@ func (s *Service) initManagers() {
 		manager.WithTwoLevelCache[announcement.Request, announcement.Response](time.Minute, CacheTTLList),
 		manager.WithMetrics[announcement.Request, announcement.Response](s.metrics),
 		manager.WithProvider[announcement.Request, announcement.Response](
-			eastmoneyadapter.NewAnnouncementAdapter(eastmoneyclient.NewClient(s.httpClient)),
+			eastmoneyadapter.NewAnnouncementAdapter(eastmoneyclient.NewClient(eastmoneyclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHighest),
 		),
 		manager.WithProvider[announcement.Request, announcement.Response](
-			cninfoadapter.NewAnnouncementAdapter(cninfoclient.NewClient(s.httpClient)),
+			cninfoadapter.NewAnnouncementAdapter(cninfoclient.NewClient(cninfoclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHigh),
 		),
 	)
@@ -232,7 +234,7 @@ func (s *Service) initManagers() {
 		manager.WithTwoLevelCache[kline.Request, kline.Response](time.Minute, CacheTTLKline),
 		manager.WithMetrics[kline.Request, kline.Response](s.metrics),
 		manager.WithProvider[kline.Request, kline.Response](
-			yahooadapter.NewKlineAdapter(yahooclient.NewClient(s.httpClient)),
+			yahooadapter.NewKlineAdapter(yahooclient.NewClient(yahooclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHighest),
 		),
 	)
@@ -242,7 +244,7 @@ func (s *Service) initManagers() {
 		manager.WithTwoLevelCache[spot.Request, spot.Response](time.Minute, CacheTTLSpot),
 		manager.WithMetrics[spot.Request, spot.Response](s.metrics),
 		manager.WithProvider[spot.Request, spot.Response](
-			yahooadapter.NewSpotAdapter(yahooclient.NewClient(s.httpClient)),
+			yahooadapter.NewSpotAdapter(yahooclient.NewClient(yahooclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHighest),
 		),
 	)
@@ -252,7 +254,7 @@ func (s *Service) initManagers() {
 		manager.WithTwoLevelCache[instrument.Request, instrument.Response](time.Minute, CacheTTLList),
 		manager.WithMetrics[instrument.Request, instrument.Response](s.metrics),
 		manager.WithProvider[instrument.Request, instrument.Response](
-			yahooadapter.NewInstrumentAdapter(yahooclient.NewClient(s.httpClient)),
+			yahooadapter.NewInstrumentAdapter(yahooclient.NewClient(yahooclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHighest),
 		),
 	)
@@ -263,7 +265,7 @@ func (s *Service) initManagers() {
 		manager.WithTwoLevelCache[kline.Request, kline.Response](time.Minute, CacheTTLKline),
 		manager.WithMetrics[kline.Request, kline.Response](s.metrics),
 		manager.WithProvider[kline.Request, kline.Response](
-			eastmoneyhkadapter.NewKlineAdapter(eastmoneyhkclient.NewClient(s.httpClient)),
+			eastmoneyhkadapter.NewKlineAdapter(eastmoneyhkclient.NewClient(eastmoneyhkclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHighest),
 		),
 	)
@@ -273,7 +275,7 @@ func (s *Service) initManagers() {
 		manager.WithTwoLevelCache[spot.Request, spot.Response](time.Minute, CacheTTLSpot),
 		manager.WithMetrics[spot.Request, spot.Response](s.metrics),
 		manager.WithProvider[spot.Request, spot.Response](
-			eastmoneyhkadapter.NewSpotAdapter(eastmoneyhkclient.NewClient(s.httpClient)),
+			eastmoneyhkadapter.NewSpotAdapter(eastmoneyhkclient.NewClient(eastmoneyhkclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHighest),
 		),
 	)
@@ -283,39 +285,51 @@ func (s *Service) initManagers() {
 		manager.WithTwoLevelCache[instrument.Request, instrument.Response](time.Minute, CacheTTLList),
 		manager.WithMetrics[instrument.Request, instrument.Response](s.metrics),
 		manager.WithProvider[instrument.Request, instrument.Response](
-			eastmoneyhkadapter.NewInstrumentAdapter(eastmoneyhkclient.NewClient(s.httpClient)),
+			eastmoneyhkadapter.NewInstrumentAdapter(eastmoneyhkclient.NewClient(eastmoneyhkclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHighest),
 		),
 	)
 
 	// ========== 加密货币 (Crypto) ==========
-	// K线 - 支持 binance
+	// K线 - 支持 binance, okx
 	s.klineManagers[domain.MarketCrypto] = manager.NewManager[kline.Request, kline.Response](
 		manager.WithTwoLevelCache[kline.Request, kline.Response](time.Minute, CacheTTLKline),
 		manager.WithMetrics[kline.Request, kline.Response](s.metrics),
 		manager.WithProvider[kline.Request, kline.Response](
-			binanceadapter.NewKlineAdapter(binanceclient.NewClient(s.httpClient)),
+			binanceadapter.NewKlineAdapter(binanceclient.NewClient(binanceclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHighest),
+		),
+		manager.WithProvider[kline.Request, kline.Response](
+			okxadapter.NewKlineAdapter(okxclient.NewClient(okxclient.WithHTTPClient(s.httpClient))),
+			manager.WithPriority(PriorityHigh),
 		),
 	)
 
-	// 实时行情 - 支持 binance
+	// 实时行情 - 支持 binance, okx
 	s.spotManagers[domain.MarketCrypto] = manager.NewManager[spot.Request, spot.Response](
 		manager.WithTwoLevelCache[spot.Request, spot.Response](time.Minute, CacheTTLSpot),
 		manager.WithMetrics[spot.Request, spot.Response](s.metrics),
 		manager.WithProvider[spot.Request, spot.Response](
-			binanceadapter.NewSpotAdapter(binanceclient.NewClient(s.httpClient)),
+			binanceadapter.NewSpotAdapter(binanceclient.NewClient(binanceclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHighest),
+		),
+		manager.WithProvider[spot.Request, spot.Response](
+			okxadapter.NewSpotAdapter(okxclient.NewClient(okxclient.WithHTTPClient(s.httpClient))),
+			manager.WithPriority(PriorityHigh),
 		),
 	)
 
-	// 证券列表 - 支持 binance
+	// 证券列表 - 支持 binance, okx
 	s.instrumentManagers[domain.MarketCrypto] = manager.NewManager[instrument.Request, instrument.Response](
 		manager.WithTwoLevelCache[instrument.Request, instrument.Response](time.Minute, CacheTTLList),
 		manager.WithMetrics[instrument.Request, instrument.Response](s.metrics),
 		manager.WithProvider[instrument.Request, instrument.Response](
-			binanceadapter.NewInstrumentAdapter(binanceclient.NewClient(s.httpClient)),
+			binanceadapter.NewInstrumentAdapter(binanceclient.NewClient(binanceclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHighest),
+		),
+		manager.WithProvider[instrument.Request, instrument.Response](
+			okxadapter.NewInstrumentAdapter(okxclient.NewClient(okxclient.WithHTTPClient(s.httpClient))),
+			manager.WithPriority(PriorityHigh),
 		),
 	)
 }

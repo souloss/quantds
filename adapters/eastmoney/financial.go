@@ -70,7 +70,7 @@ func (a *FinancialAdapter) Fetch(ctx context.Context, _ request.Client, req fina
 		PageNumber: 1,
 		PageSize:   100,
 	}
-	bsRes, bsRec, err := a.client.GetFinancials(ctx, bsParams)
+	bsRes, bsRec, bsErr := a.client.GetFinancials(ctx, bsParams)
 	trace.AddRequest(bsRec)
 
 	// 3. Cash Flow
@@ -80,12 +80,12 @@ func (a *FinancialAdapter) Fetch(ctx context.Context, _ request.Client, req fina
 		PageNumber: 1,
 		PageSize:   100,
 	}
-	cfRes, cfRec, err := a.client.GetFinancials(ctx, cfParams)
+	cfRes, cfRec, cfErr := a.client.GetFinancials(ctx, cfParams)
 	trace.AddRequest(cfRec)
 
-	// Index by Report Date
+	// Index by Report Date — 忽略 BS/CF 的错误，仍然返回可用的收入数据
 	bsMap := make(map[string]map[string]interface{})
-	if bsRes != nil {
+	if bsErr == nil && bsRes != nil {
 		for _, row := range bsRes.Data {
 			date := getString(row, "REPORT_DATE")
 			if date != "" {
@@ -95,7 +95,7 @@ func (a *FinancialAdapter) Fetch(ctx context.Context, _ request.Client, req fina
 	}
 
 	cfMap := make(map[string]map[string]interface{})
-	if cfRes != nil {
+	if cfErr == nil && cfRes != nil {
 		for _, row := range cfRes.Data {
 			date := getString(row, "REPORT_DATE")
 			if date != "" {

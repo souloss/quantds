@@ -176,12 +176,18 @@ func toHKSecid(symbol string) (string, error) {
 // Accepts formats: 00700, 00700.HK, 0700.HKEX
 func ParseHKSymbol(symbol string) (code string, ok bool) {
 	symbol = strings.TrimSpace(symbol)
+	if symbol == "" {
+		return "", false
+	}
 
 	// Handle CODE.MARKET format
 	if strings.Contains(symbol, ".") {
 		parts := strings.Split(symbol, ".")
 		if len(parts) >= 2 {
 			code = parts[0]
+			if !isDigits(code) {
+				return "", false
+			}
 			// Ensure 5-digit code
 			code = padHKCode(code)
 			return code, len(code) == 5
@@ -189,12 +195,28 @@ func ParseHKSymbol(symbol string) (code string, ok bool) {
 		return "", false
 	}
 
-	// Plain code
+	// Plain code - must be numeric
+	if !isDigits(symbol) {
+		return "", false
+	}
 	code = padHKCode(symbol)
 	if len(code) == 5 {
 		return code, true
 	}
 	return "", false
+}
+
+// isDigits checks if a string contains only digits
+func isDigits(s string) bool {
+	if s == "" {
+		return false
+	}
+	for _, c := range s {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
 }
 
 // padHKCode pads HK stock code to 5 digits

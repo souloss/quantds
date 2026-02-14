@@ -11,7 +11,7 @@ import (
 // - 1-90 days: hourly interval
 // - >90 days: daily interval
 func TestClient_GetMarketChart(t *testing.T) {
-	client := NewClient(nil)
+	client := NewClient()
 	ctx := context.Background()
 
 	params := &MarketChartRequest{
@@ -22,7 +22,7 @@ func TestClient_GetMarketChart(t *testing.T) {
 
 	result, _, err := client.GetMarketChart(ctx, params)
 	if err != nil {
-		t.Fatalf("GetMarketChart failed: %v", err)
+		checkAPIError(t, err)
 	}
 
 	t.Logf("Market Chart Prices count: %d", len(result.Prices))

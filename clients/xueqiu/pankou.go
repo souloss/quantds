@@ -60,23 +60,12 @@ func (c *Client) GetPankou(ctx context.Context, symbol string) (*PankouData, *re
 	params := url.Values{}
 	params.Set("symbol", xueqiuSymbol)
 
-	reqURL := fmt.Sprintf("%s%s?%s", "https://stock.xueqiu.com", PankouAPI, params.Encode())
-
-	headers := map[string]string{
-		"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-		"Referer":    "https://xueqiu.com/",
-	}
-	if c.cookie != "" {
-		headers["Cookie"] = c.cookie
-	}
-	if c.token != "" {
-		headers["X-Token"] = c.token
-	}
+	reqURL := fmt.Sprintf("%s%s?%s", BaseURL, PankouAPI, params.Encode())
 
 	req := request.Request{
 		Method:  "GET",
 		URL:     reqURL,
-		Headers: headers,
+		Headers: c.buildHeaders(),
 	}
 
 	resp, record, err := c.http.Do(ctx, req)

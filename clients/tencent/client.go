@@ -16,7 +16,7 @@
 //
 // Example:
 //
-//	client := tencent.NewClient(nil)
+//	client := tencent.NewClient()
 //	defer client.Close()
 //
 //	result, record, err := client.GetKline(ctx, &tencent.KlineParams{
@@ -27,11 +27,22 @@
 package tencent
 
 import (
+	"time"
+
+	"github.com/failsafe-go/failsafe-go/timeout"
 	"github.com/souloss/quantds/request"
 )
 
 const (
 	BaseURL = "https://web.sqt.gtimg.cn"
+
+	// API Endpoints
+	QuoteAPI     = "http://qt.gtimg.cn/q="
+	MoneyFlowAPI = "http://qt.gtimg.cn/q=ff_"
+
+	// Default Headers
+	DefaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+	DefaultReferer   = "https://gu.qq.com/"
 )
 
 type Client struct {
@@ -40,12 +51,34 @@ type Client struct {
 
 type Option func(*Client)
 
-func NewClient(httpClient request.Client, opts ...Option) *Client {
-	if httpClient == nil {
-		httpClient = request.NewClient(request.DefaultConfig())
+// WithHTTPClient sets a custom HTTP client
+func WithHTTPClient(httpClient request.Client) Option {
+	return func(c *Client) {
+		c.http = httpClient
 	}
+}
+
+// WithTimeout sets the request timeout
+func WithTimeout(d time.Duration) Option {
+	return func(c *Client) {
+		c.http = request.NewClient(request.DefaultConfig(
+			request.WithTimeout(timeout.New[request.Response](d)),
+		))
+	}
+}
+
+// WithConfig sets a custom request configuration
+func WithConfig(cfg *request.Config) Option {
+	return func(c *Client) {
+		c.http = request.NewClient(cfg)
+	}
+}
+
+// NewClient creates a new Tencent Finance client
+// If no options are provided, it uses the default configuration
+func NewClient(opts ...Option) *Client {
 	c := &Client{
-		http: httpClient,
+		http: request.NewClient(request.DefaultConfig()),
 	}
 	for _, opt := range opts {
 		opt(c)

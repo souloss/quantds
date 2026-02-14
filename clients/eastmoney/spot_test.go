@@ -14,7 +14,7 @@ import (
 )
 
 func TestClient_GetSpot(t *testing.T) {
-	client := NewClient(request.NewClient(request.DefaultConfig()))
+	client := NewClient()
 	defer client.Close()
 
 	tests := []struct {

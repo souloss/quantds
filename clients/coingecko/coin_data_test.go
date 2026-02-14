@@ -9,7 +9,7 @@ import (
 // API Rule: Rate limit 10-30 calls/min
 // Note: Returns comprehensive data including description, links, market data
 func TestClient_GetCoinData(t *testing.T) {
-	client := NewClient(nil)
+	client := NewClient()
 	ctx := context.Background()
 
 	params := &CoinDataRequest{
@@ -24,7 +24,7 @@ func TestClient_GetCoinData(t *testing.T) {
 
 	result, _, err := client.GetCoinData(ctx, params)
 	if err != nil {
-		t.Fatalf("GetCoinData failed: %v", err)
+		checkAPIError(t, err)
 	}
 
 	t.Logf("Coin Name: %s", result.Name)

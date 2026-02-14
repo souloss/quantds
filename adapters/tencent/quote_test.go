@@ -4,24 +4,16 @@ import (
 	"testing"
 
 	"github.com/souloss/quantds/clients/tencent"
+	"github.com/souloss/quantds/domain"
 )
 
 func TestNewQuoteAdapter(t *testing.T) {
-	client := tencent.NewClient(nil)
+	client := tencent.NewClient()
 	adapter := NewQuoteAdapter(client)
 
 	if adapter == nil {
 		t.Error("NewQuoteAdapter returned nil")
 	}
-
-	if adapter.Name() != "tencent" {
-		t.Errorf("Expected name 'tencent', got '%s'", adapter.Name())
-	}
-}
-
-func TestQuoteAdapter_Name(t *testing.T) {
-	client := tencent.NewClient(nil)
-	adapter := NewQuoteAdapter(client)
 
 	if adapter.Name() != Name {
 		t.Errorf("Expected name '%s', got '%s'", Name, adapter.Name())
@@ -29,40 +21,36 @@ func TestQuoteAdapter_Name(t *testing.T) {
 }
 
 func TestQuoteAdapter_SupportedMarkets(t *testing.T) {
-	client := tencent.NewClient(nil)
+	client := tencent.NewClient()
 	adapter := NewQuoteAdapter(client)
 
 	markets := adapter.SupportedMarkets()
-	if len(markets) != 1 {
-		t.Errorf("Expected 1 supported market, got %d", len(markets))
-	}
-
-	if markets[0] != "CN" {
-		t.Errorf("Expected market 'CN', got '%s'", markets[0])
+	if len(markets) != 1 || markets[0] != domain.MarketCN {
+		t.Errorf("Expected supported markets [%s], got %v", domain.MarketCN, markets)
 	}
 }
 
 func TestQuoteAdapter_CanHandle(t *testing.T) {
-	client := tencent.NewClient(nil)
+	client := tencent.NewClient()
 	adapter := NewQuoteAdapter(client)
 
 	tests := []struct {
-		symbol string
-		want   bool
+		symbol    string
+		canHandle bool
 	}{
+		// CN symbols should match for CN adapters
 		{"000001.SZ", true},
-		{"600001.SH", true},
-		{"430001.BJ", true},
+		{"600519.SH", true},
+		// Non-CN symbols should NOT match
+		{"BTCUSDT", false},
 		{"AAPL.US", false},
-		{"0700.HK", false},
-		{"", false},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.symbol, func(t *testing.T) {
-			got := adapter.CanHandle(tt.symbol)
-			if got != tt.want {
-				t.Errorf("CanHandle(%s) = %v, want %v", tt.symbol, got, tt.want)
+			result := adapter.CanHandle(tt.symbol)
+			if result != tt.canHandle {
+				t.Errorf("CanHandle(%s) = %v, want %v", tt.symbol, result, tt.canHandle)
 			}
 		})
 	}

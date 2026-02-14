@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	KlineAPI = "/q=/cn_kline/d"
+	// KlineAPI is the endpoint for K-line data (not used directly, URL is constructed in GetKline)
+	KlineAPI = "/q=cn_kline/d"
 )
 
 type KlineParams struct {
@@ -55,14 +56,14 @@ func (c *Client) GetKline(ctx context.Context, params *KlineParams) (*KlineResul
 		count = 320
 	}
 
-	url := fmt.Sprintf("https://web.sqt.gtimg.cn/q=/cn_%s/k%s=%s", period, period, symbol)
+	url := fmt.Sprintf("https://web.sqt.gtimg.cn/q=cn_%s/k%s=%s", period, period, symbol)
 
 	req := request.Request{
 		Method: "GET",
 		URL:    url,
 		Headers: map[string]string{
-			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-			"Referer":    "https://gu.qq.com/",
+			"User-Agent": DefaultUserAgent,
+			"Referer":    DefaultReferer,
 		},
 	}
 

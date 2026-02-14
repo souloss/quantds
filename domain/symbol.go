@@ -433,8 +433,7 @@ func ParseSymbol(input string) (code string, exchange Exchange, ok bool) {
 }
 
 func FormatSymbol(code string, exchange Exchange) string {
-	market := deriveMarketFromExchange(exchange)
-	return fmt.Sprintf("%s.%s.%s", code, market, exchange)
+	return fmt.Sprintf("%s.%s", code, exchange)
 }
 
 // 扩展：完整格式化

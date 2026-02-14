@@ -18,89 +18,113 @@
 //
 // Example:
 //
-//	client := yahoo.NewClient(nil)
-//	defer client.Close()
+//      client := yahoo.NewClient()
+//      defer client.Close()
 //
-//	// Get daily K-line for Apple (AAPL)
-//	result, record, err := client.GetKline(ctx, &yahoo.KlineParams{
-//	    Symbol:    "AAPL",
-//	    Interval:  "1d",
-//	    StartDate: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
-//	    EndDate:   time.Date(2024, 12, 31, 0, 0, 0, 0, time.UTC),
-//	})
+//      // Get daily K-line for Apple (AAPL)
+//      result, record, err := client.GetKline(ctx, &yahoo.KlineParams{
+//          Symbol:    "AAPL",
+//          Interval:  "1d",
+//          StartDate: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+//          EndDate:   time.Date(2024, 12, 31, 0, 0, 0, 0, time.UTC),
+//      })
 package yahoo
 
 import (
-	"github.com/souloss/quantds/request"
+        "time"
+
+        "github.com/failsafe-go/failsafe-go/timeout"
+        "github.com/souloss/quantds/request"
 )
 
 // API endpoints
 const (
-	BaseURL    = "https://query1.finance.yahoo.com"
-	ChartAPI   = "/v8/finance/chart"
-	QuoteAPI   = "/v7/finance/quote"
-	SearchAPI  = "/v1/finance/search"
-	SummaryAPI = "/v10/finance/quoteSummary"
+        BaseURL    = "https://query1.finance.yahoo.com"
+        ChartAPI   = "/v8/finance/chart"
+        QuoteAPI   = "/v7/finance/quote"
+        SearchAPI  = "/v1/finance/search"
+        SummaryAPI = "/v10/finance/quoteSummary"
 )
 
 // HTTP headers for Yahoo Finance API
 var (
-	DefaultHeaders = map[string]string{
-		"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-		"Accept":     "application/json",
-	}
+        DefaultHeaders = map[string]string{
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept":     "application/json",
+        }
 )
 
 // Interval constants for K-line data
 const (
-	Interval1m  = "1m"
-	Interval5m  = "5m"
-	Interval15m = "15m"
-	Interval30m = "30m"
-	Interval60m = "60m"
-	Interval1d  = "1d"
-	Interval1w  = "1wk"
-	Interval1M  = "1mo"
+        Interval1m  = "1m"
+        Interval5m  = "5m"
+        Interval15m = "15m"
+        Interval30m = "30m"
+        Interval60m = "60m"
+        Interval1d  = "1d"
+        Interval1w  = "1wk"
+        Interval1M  = "1mo"
 )
 
 // Range constants for K-line data
 const (
-	Range1d  = "1d"
-	Range5d  = "5d"
-	Range1mo = "1mo"
-	Range3mo = "3mo"
-	Range6mo = "6mo"
-	Range1y  = "1y"
-	Range2y  = "2y"
-	Range5y  = "5y"
-	Range10y = "10y"
-	RangeYtd = "ytd"
-	RangeMax = "max"
+        Range1d  = "1d"
+        Range5d  = "5d"
+        Range1mo = "1mo"
+        Range3mo = "3mo"
+        Range6mo = "6mo"
+        Range1y  = "1y"
+        Range2y  = "2y"
+        Range5y  = "5y"
+        Range10y = "10y"
+        RangeYtd = "ytd"
+        RangeMax = "max"
 )
 
 // Client is the Yahoo Finance API client
 type Client struct {
-	http request.Client
+        http request.Client
 }
 
 // Option is a function that configures the client
 type Option func(*Client)
 
+// WithHTTPClient sets a custom HTTP client
+func WithHTTPClient(httpClient request.Client) Option {
+        return func(c *Client) {
+                c.http = httpClient
+        }
+}
+
+// WithTimeout sets the request timeout
+func WithTimeout(d time.Duration) Option {
+        return func(c *Client) {
+                c.http = request.NewClient(request.DefaultConfig(
+                        request.WithTimeout(timeout.New[request.Response](d)),
+                ))
+        }
+}
+
+// WithConfig sets a custom request configuration
+func WithConfig(cfg *request.Config) Option {
+        return func(c *Client) {
+                c.http = request.NewClient(cfg)
+        }
+}
+
 // NewClient creates a new Yahoo Finance client
-func NewClient(httpClient request.Client, opts ...Option) *Client {
-	if httpClient == nil {
-		httpClient = request.NewClient(request.DefaultConfig())
-	}
-	c := &Client{
-		http: httpClient,
-	}
-	for _, opt := range opts {
-		opt(c)
-	}
-	return c
+// If no options are provided, it uses the default configuration
+func NewClient(opts ...Option) *Client {
+        c := &Client{
+                http: request.NewClient(request.DefaultConfig()),
+        }
+        for _, opt := range opts {
+                opt(c)
+        }
+        return c
 }
 
 // Close closes the underlying HTTP client
 func (c *Client) Close() {
-	c.http.Close()
+        c.http.Close()
 }

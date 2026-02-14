@@ -6,7 +6,7 @@ import (
 )
 
 func TestClient_GetTicker24hr(t *testing.T) {
-	client := NewClient(nil)
+	client := NewClient()
 	ctx := context.Background()
 
 	params := &TickerParams{
@@ -35,7 +35,7 @@ func TestClient_GetTicker24hr(t *testing.T) {
 }
 
 func TestClient_GetTicker24hr_All(t *testing.T) {
-	client := NewClient(nil)
+	client := NewClient()
 	ctx := context.Background()
 
 	params := &TickerParams{

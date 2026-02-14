@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	KlineAPI = "/chart/kline.json"
+	KlineAPI = "/v5/stock/chart/kline.json"
 )
 
 type KlineParams struct {
@@ -69,24 +69,13 @@ func (c *Client) GetKline(ctx context.Context, params *KlineParams) (*KlineResul
 		count = 320
 	}
 
-	url := fmt.Sprintf("%s%s?symbol=%s&type=%s&count=%d",
+	reqURL := fmt.Sprintf("%s%s?symbol=%s&type=%s&count=%d",
 		BaseURL, KlineAPI, symbol, period, count)
-
-	headers := map[string]string{
-		"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-		"Referer":    "https://xueqiu.com/",
-	}
-	if c.cookie != "" {
-		headers["Cookie"] = c.cookie
-	}
-	if c.token != "" {
-		headers["X-Token"] = c.token
-	}
 
 	req := request.Request{
 		Method:  "GET",
-		URL:     url,
-		Headers: headers,
+		URL:     reqURL,
+		Headers: c.buildHeaders(),
 	}
 
 	resp, record, err := c.http.Do(ctx, req)

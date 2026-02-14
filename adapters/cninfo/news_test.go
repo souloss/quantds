@@ -7,7 +7,7 @@ import (
 )
 
 func TestNewAnnouncementAdapter(t *testing.T) {
-	client := cninfo.NewClient(nil)
+	client := cninfo.NewClient()
 	adapter := NewAnnouncementAdapter(client)
 
 	if adapter == nil {
@@ -20,7 +20,7 @@ func TestNewAnnouncementAdapter(t *testing.T) {
 }
 
 func TestAnnouncementAdapter_Name(t *testing.T) {
-	client := cninfo.NewClient(nil)
+	client := cninfo.NewClient()
 	adapter := NewAnnouncementAdapter(client)
 
 	if adapter.Name() != Name {
@@ -29,7 +29,7 @@ func TestAnnouncementAdapter_Name(t *testing.T) {
 }
 
 func TestAnnouncementAdapter_CanHandle(t *testing.T) {
-	client := cninfo.NewClient(nil)
+	client := cninfo.NewClient()
 	adapter := NewAnnouncementAdapter(client)
 
 	tests := []struct {

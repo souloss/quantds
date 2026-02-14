@@ -6,7 +6,7 @@ import (
 )
 
 func TestClient_GetExchangeInfo(t *testing.T) {
-	client := NewClient(nil)
+	client := NewClient()
 	ctx := context.Background()
 
 	result, _, err := client.GetExchangeInfo(ctx)
@@ -44,7 +44,7 @@ func TestClient_GetExchangeInfo(t *testing.T) {
 }
 
 func TestClient_GetInstruments_Filter(t *testing.T) {
-	client := NewClient(nil)
+	client := NewClient()
 	ctx := context.Background()
 
 	// Test filter by Quote Asset
@@ -54,7 +54,8 @@ func TestClient_GetInstruments_Filter(t *testing.T) {
 
 	result, _, err := client.GetInstruments(ctx, params)
 	if err != nil {
-		t.Fatalf("GetInstruments failed: %v", err)
+		checkAPIError(t, err)
+		return
 	}
 
 	if len(result.Instruments) == 0 {

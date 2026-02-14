@@ -65,23 +65,12 @@ func (c *Client) GetSpot(ctx context.Context, params *SpotParams) (*SpotResult, 
 		symbolStr += s
 	}
 
-	url := fmt.Sprintf("https://stock.xueqiu.com%s?symbol=%s", SpotAPI, symbolStr)
-
-	headers := map[string]string{
-		"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-		"Referer":    "https://xueqiu.com/",
-	}
-	if c.cookie != "" {
-		headers["Cookie"] = c.cookie
-	}
-	if c.token != "" {
-		headers["X-Token"] = c.token
-	}
+	reqURL := fmt.Sprintf("%s%s?symbol=%s", BaseURL, SpotAPI, symbolStr)
 
 	req := request.Request{
 		Method:  "GET",
-		URL:     url,
-		Headers: headers,
+		URL:     reqURL,
+		Headers: c.buildHeaders(),
 	}
 
 	resp, record, err := c.http.Do(ctx, req)

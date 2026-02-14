@@ -9,7 +9,7 @@ import (
 // API Rule: Supports multiple coins and currencies in one request
 // Note: Price data is updated frequently but not real-time stream
 func TestClient_GetSimplePrice(t *testing.T) {
-	client := NewClient(nil)
+	client := NewClient()
 	ctx := context.Background()
 
 	params := &SimplePriceRequest{
@@ -19,7 +19,7 @@ func TestClient_GetSimplePrice(t *testing.T) {
 
 	result, _, err := client.GetSimplePrice(ctx, params)
 	if err != nil {
-		t.Fatalf("GetSimplePrice failed: %v", err)
+		checkAPIError(t, err)
 	}
 
 	t.Logf("Simple Price Response: %+v", result)

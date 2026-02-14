@@ -64,8 +64,8 @@ func (c *Client) GetSpot(ctx context.Context, params *SpotParams) (*SpotResult, 
 		Method: "GET",
 		URL:    url,
 		Headers: map[string]string{
-			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-			"Referer":    "https://gu.qq.com/",
+			"User-Agent": DefaultUserAgent,
+			"Referer":    DefaultReferer,
 		},
 	}
 

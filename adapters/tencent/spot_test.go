@@ -7,7 +7,7 @@ import (
 )
 
 func TestNewSpotAdapter(t *testing.T) {
-	client := tencent.NewClient(nil)
+	client := tencent.NewClient()
 	adapter := NewSpotAdapter(client)
 
 	if adapter == nil {
@@ -20,7 +20,7 @@ func TestNewSpotAdapter(t *testing.T) {
 }
 
 func TestSpotAdapter_Name(t *testing.T) {
-	client := tencent.NewClient(nil)
+	client := tencent.NewClient()
 	adapter := NewSpotAdapter(client)
 
 	if adapter.Name() != Name {

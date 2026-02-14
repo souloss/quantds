@@ -4,12 +4,10 @@ import (
 	"context"
 	"testing"
 	"time"
-
-	"github.com/souloss/quantds/request"
 )
 
 func TestClient_GetStockDetail(t *testing.T) {
-	client := NewClient(request.NewClient(request.DefaultConfig()))
+	client := NewClient()
 	defer client.Close()
 
 	tests := []struct {
@@ -27,7 +25,8 @@ func TestClient_GetStockDetail(t *testing.T) {
 
 			result, record, err := client.GetStockDetail(ctx, tt.params)
 			if err != nil {
-				t.Fatalf("GetStockDetail() error = %v", err)
+				checkAPIError(t, err)
+				return
 			}
 
 			if record == nil {
@@ -58,7 +57,7 @@ func TestClient_GetStockDetail(t *testing.T) {
 }
 
 func TestClient_GetStockDetail_InvalidSymbol(t *testing.T) {
-	client := NewClient(request.NewClient(request.DefaultConfig()))
+	client := NewClient()
 	defer client.Close()
 
 	ctx := context.Background()

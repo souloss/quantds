@@ -7,7 +7,7 @@ import (
 )
 
 func TestNewKlineAdapter(t *testing.T) {
-	client := tushare.NewClient(nil)
+	client := tushare.NewClient()
 	adapter := NewKlineAdapter(client)
 
 	if adapter == nil {
@@ -20,7 +20,7 @@ func TestNewKlineAdapter(t *testing.T) {
 }
 
 func TestKlineAdapter_Name(t *testing.T) {
-	client := tushare.NewClient(nil)
+	client := tushare.NewClient()
 	adapter := NewKlineAdapter(client)
 
 	if adapter.Name() != Name {

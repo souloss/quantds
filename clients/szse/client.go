@@ -1,6 +1,9 @@
 package szse
 
 import (
+	"time"
+
+	"github.com/failsafe-go/failsafe-go/timeout"
 	"github.com/souloss/quantds/request"
 )
 
@@ -17,16 +20,35 @@ type Client struct {
 
 type Option func(*Client)
 
+// WithHTTPClient sets a custom HTTP client
+func WithHTTPClient(httpClient request.Client) Option {
+	return func(c *Client) { c.http = httpClient }
+}
+
+// WithTimeout sets the request timeout
+func WithTimeout(d time.Duration) Option {
+	return func(c *Client) {
+		c.http = request.NewClient(request.DefaultConfig(
+			request.WithTimeout(timeout.New[request.Response](d)),
+		))
+	}
+}
+
+// WithConfig sets a custom request configuration
+func WithConfig(cfg *request.Config) Option {
+	return func(c *Client) { c.http = request.NewClient(cfg) }
+}
+
+// WithBaseURL sets the base URL
 func WithBaseURL(url string) Option {
 	return func(c *Client) { c.baseURL = url }
 }
 
-func NewClient(httpClient request.Client, opts ...Option) *Client {
-	if httpClient == nil {
-		httpClient = request.NewClient(request.DefaultConfig())
-	}
+// NewClient creates a new SZSE client
+// If no options are provided, it uses the default configuration
+func NewClient(opts ...Option) *Client {
 	c := &Client{
-		http:    httpClient,
+		http:    request.NewClient(request.DefaultConfig()),
 		baseURL: BaseURL,
 		headers: map[string]string{
 			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",

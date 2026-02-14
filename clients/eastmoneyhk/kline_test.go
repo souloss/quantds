@@ -5,7 +5,7 @@ import (
 )
 
 func TestNewClient(t *testing.T) {
-	client := NewClient(nil)
+	client := NewClient()
 	if client == nil {
 		t.Error("NewClient returned nil")
 	}

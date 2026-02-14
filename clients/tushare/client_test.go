@@ -6,8 +6,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/souloss/quantds/request"
 )
 
 // newTestClient 创建测试用客户端，需要设置 TUSHARE_TOKEN 环境变量。
@@ -17,7 +15,7 @@ func newTestClient(t *testing.T) *Client {
 	if token == "" {
 		t.Skip("TUSHARE_TOKEN not set")
 	}
-	return NewClient(request.NewClient(request.DefaultConfig()), WithToken(token))
+	return NewClient(WithToken(token))
 }
 
 // skipOnTokenError 当遇到 token 相关错误时跳过测试（而非失败）。
@@ -27,8 +25,13 @@ func skipOnTokenError(t *testing.T, err error) {
 		return
 	}
 	msg := err.Error()
+	// token 无效、接口名错误
 	if strings.Contains(msg, "token") || strings.Contains(msg, "40101") || strings.Contains(msg, "-1") {
 		t.Skipf("Token issue, skipping: %v", err)
+	}
+	// 权限/限频：40203（每分钟/每天最多访问 N 次）
+	if strings.Contains(msg, "40203") || strings.Contains(msg, "最多访问") || strings.Contains(msg, "权限") {
+		t.Skipf("Rate limit or permission, skipping: %v", err)
 	}
 }
 
@@ -230,7 +233,7 @@ func TestNewClient_EnvVars(t *testing.T) {
 	os.Setenv("TUSHARE_BASE_URL", "http://custom.api.test")
 	os.Setenv("TUSHARE_TOKEN", "test_token_123")
 
-	client := NewClient(nil)
+	client := NewClient()
 	if client.baseURL != "http://custom.api.test" {
 		t.Errorf("Expected baseURL from env, got %s", client.baseURL)
 	}
@@ -241,7 +244,7 @@ func TestNewClient_EnvVars(t *testing.T) {
 
 func TestNewClient_Options(t *testing.T) {
 	// 测试 Option 覆盖环境变量
-	client := NewClient(nil, WithBaseURL("http://override.test"), WithToken("override_token"))
+	client := NewClient(WithBaseURL("http://override.test"), WithToken("override_token"))
 	if client.baseURL != "http://override.test" {
 		t.Errorf("Expected baseURL from option, got %s", client.baseURL)
 	}

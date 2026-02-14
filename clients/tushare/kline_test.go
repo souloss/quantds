@@ -5,8 +5,6 @@ import (
 	"os"
 	"testing"
 	"time"
-
-	"github.com/souloss/quantds/request"
 )
 
 func TestClient_GetKline(t *testing.T) {
@@ -15,7 +13,7 @@ func TestClient_GetKline(t *testing.T) {
 		t.Skip("TUSHARE_TOKEN not set")
 	}
 
-	client := NewClient(request.NewClient(request.DefaultConfig()), WithToken(token))
+	client := NewClient(WithToken(token))
 	defer client.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)

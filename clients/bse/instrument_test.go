@@ -4,12 +4,10 @@ import (
 	"context"
 	"testing"
 	"time"
-
-	"github.com/souloss/quantds/request"
 )
 
 func TestClient_GetInstruments(t *testing.T) {
-	client := NewClient(request.NewClient(request.DefaultConfig()))
+	client := NewClient()
 	defer client.Close()
 
 	tests := []struct {
@@ -63,7 +61,7 @@ func TestClient_GetInstruments(t *testing.T) {
 }
 
 func TestClient_GetInstrumentsPage(t *testing.T) {
-	client := NewClient(request.NewClient(request.DefaultConfig()))
+	client := NewClient()
 	defer client.Close()
 
 	tests := []struct {

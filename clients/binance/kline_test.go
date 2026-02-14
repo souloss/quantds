@@ -7,7 +7,7 @@ import (
 )
 
 func TestNewClient(t *testing.T) {
-	client := NewClient(nil)
+	client := NewClient()
 	if client == nil {
 		t.Error("NewClient returned nil")
 	}
@@ -206,7 +206,7 @@ func TestGetBaseAsset(t *testing.T) {
 }
 
 func TestClient_GetKline(t *testing.T) {
-	client := NewClient(nil)
+	client := NewClient()
 	ctx := context.Background()
 
 	params := &KlineParams{
@@ -252,7 +252,7 @@ func TestClient_GetKline(t *testing.T) {
 }
 
 func TestClient_GetKline_Error(t *testing.T) {
-	client := NewClient(nil)
+	client := NewClient()
 	ctx := context.Background()
 
 	// Invalid symbol should return error or empty result depending on API behavior

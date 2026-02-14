@@ -6,10 +6,11 @@ import (
 )
 
 // TestClient_GetCandlesticks tests retrieving historical K-line data
+// TestClient_GetCandlesticks tests retrieving historical K-line data
 // API Rule: Max 1440 data points per request
 // Supported bars: 1m, 3m, 5m, 15m, 30m, 1H, 2H, 4H...
 func TestClient_GetCandlesticks(t *testing.T) {
-	client := NewClient(nil)
+	client := NewClient()
 	ctx := context.Background()
 
 	params := &CandlestickRequest{

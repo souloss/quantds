@@ -8,7 +8,7 @@ import (
 )
 
 func TestNewKlineAdapter(t *testing.T) {
-	client := eastmoney.NewClient(nil)
+	client := eastmoney.NewClient()
 	adapter := NewKlineAdapter(client)
 
 	if adapter == nil {
@@ -21,7 +21,7 @@ func TestNewKlineAdapter(t *testing.T) {
 }
 
 func TestKlineAdapter_Name(t *testing.T) {
-	client := eastmoney.NewClient(nil)
+	client := eastmoney.NewClient()
 	adapter := NewKlineAdapter(client)
 
 	if adapter.Name() != Name {
@@ -30,7 +30,7 @@ func TestKlineAdapter_Name(t *testing.T) {
 }
 
 func TestKlineAdapter_SupportedMarkets(t *testing.T) {
-	client := eastmoney.NewClient(nil)
+	client := eastmoney.NewClient()
 	adapter := NewKlineAdapter(client)
 
 	markets := adapter.SupportedMarkets()
@@ -40,7 +40,7 @@ func TestKlineAdapter_SupportedMarkets(t *testing.T) {
 }
 
 func TestKlineAdapter_CanHandle(t *testing.T) {
-	client := eastmoney.NewClient(nil)
+	client := eastmoney.NewClient()
 	adapter := NewKlineAdapter(client)
 
 	tests := []struct {

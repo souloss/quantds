@@ -17,79 +17,103 @@
 //
 // Example:
 //
-//	client := eastmoneyhk.NewClient(nil)
-//	defer client.Close()
+//      client := eastmoneyhk.NewClient()
+//      defer client.Close()
 //
-//	// Get daily K-line for Tencent (00700.HK)
-//	result, record, err := client.GetKline(ctx, &eastmoneyhk.KlineParams{
-//	    Symbol:    "00700.HK",
-//	    StartDate: "20240101",
-//	    EndDate:   "20241231",
-//	    Period:    "101",  // daily
-//	})
+//      // Get daily K-line for Tencent (00700.HK)
+//      result, record, err := client.GetKline(ctx, &eastmoneyhk.KlineParams{
+//          Symbol:    "00700.HK",
+//          StartDate: "20240101",
+//          EndDate:   "20241231",
+//          Period:    "101",  // daily
+//      })
 package eastmoneyhk
 
 import (
-	"github.com/souloss/quantds/request"
+        "time"
+
+        "github.com/failsafe-go/failsafe-go/timeout"
+        "github.com/souloss/quantds/request"
 )
 
 // API endpoints
 const (
-	BaseURL   = "https://push2his.eastmoney.com"
-	PushURL   = "https://push2.eastmoney.com"
-	QuoteAPI  = "https://push2.eastmoney.com/api/qt/clist/get"
-	DetailAPI = "https://emweb.eastmoney.com/PC_HKF10/NewFinanceAnalysis/Index"
+        BaseURL   = "https://push2his.eastmoney.com"
+        PushURL   = "https://push2.eastmoney.com"
+        QuoteAPI  = "https://push2.eastmoney.com/api/qt/clist/get"
+        DetailAPI = "https://emweb.eastmoney.com/PC_HKF10/NewFinanceAnalysis/Index"
 )
 
 // Market ID for HK stocks in EastMoney system
 const (
-	MarketHK = 116 // HK stock market ID in EastMoney
+        MarketHK = 116 // HK stock market ID in EastMoney
 )
 
 // Period constants for K-line data
 const (
-	Period1m  = "1"
-	Period5m  = "5"
-	Period15m = "15"
-	Period30m = "30"
-	Period60m = "60"
-	Period1d  = "101"
-	Period1w  = "102"
-	Period1M  = "103"
+        Period1m  = "1"
+        Period5m  = "5"
+        Period15m = "15"
+        Period30m = "30"
+        Period60m = "60"
+        Period1d  = "101"
+        Period1w  = "102"
+        Period1M  = "103"
 )
 
 // HTTP headers for EastMoney HK API
 var (
-	DefaultHeaders = map[string]string{
-		"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-		"Referer":    "https://quote.eastmoney.com/hk/",
-		"Accept":     "application/json",
-	}
+        DefaultHeaders = map[string]string{
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Referer":    "https://quote.eastmoney.com/hk/",
+                "Accept":     "application/json",
+        }
 )
 
 // Client is the EastMoney HK API client
 type Client struct {
-	http request.Client
+        http request.Client
 }
 
 // Option is a function that configures the client
 type Option func(*Client)
 
+// WithHTTPClient sets a custom HTTP client
+func WithHTTPClient(httpClient request.Client) Option {
+        return func(c *Client) {
+                c.http = httpClient
+        }
+}
+
+// WithTimeout sets the request timeout
+func WithTimeout(d time.Duration) Option {
+        return func(c *Client) {
+                c.http = request.NewClient(request.DefaultConfig(
+                        request.WithTimeout(timeout.New[request.Response](d)),
+                ))
+        }
+}
+
+// WithConfig sets a custom request configuration
+func WithConfig(cfg *request.Config) Option {
+        return func(c *Client) {
+                c.http = request.NewClient(cfg)
+        }
+}
+
 // NewClient creates a new EastMoney HK client
-func NewClient(httpClient request.Client, opts ...Option) *Client {
-	if httpClient == nil {
-		httpClient = request.NewClient(request.DefaultConfig())
-	}
-	c := &Client{
-		http: httpClient,
-	}
-	for _, opt := range opts {
-		opt(c)
-	}
-	return c
+// If no options are provided, it uses the default configuration
+func NewClient(opts ...Option) *Client {
+        c := &Client{
+                http: request.NewClient(request.DefaultConfig()),
+        }
+        for _, opt := range opts {
+                opt(c)
+        }
+        return c
 }
 
 // Close closes the underlying HTTP client
 func (c *Client) Close() {
-	c.http.Close()
+        c.http.Close()
 }

@@ -4,12 +4,10 @@ import (
 	"context"
 	"testing"
 	"time"
-
-	"github.com/souloss/quantds/request"
 )
 
 func TestClient_GetStockList(t *testing.T) {
-	client := NewClient(request.NewClient(request.DefaultConfig()))
+	client := NewClient()
 	defer client.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -36,7 +34,7 @@ func TestClient_GetStockList(t *testing.T) {
 }
 
 func TestClient_GetOrgID(t *testing.T) {
-	client := NewClient(request.NewClient(request.DefaultConfig()))
+	client := NewClient()
 	defer client.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
@@ -65,7 +63,7 @@ func TestClient_GetOrgID(t *testing.T) {
 }
 
 func TestClient_GetOrgIDForCode(t *testing.T) {
-	client := NewClient(request.NewClient(request.DefaultConfig()))
+	client := NewClient()
 	defer client.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
@@ -88,7 +86,7 @@ func TestClient_GetOrgIDForCode(t *testing.T) {
 }
 
 func TestClient_QueryNews(t *testing.T) {
-	client := NewClient(request.NewClient(request.DefaultConfig()))
+	client := NewClient()
 	defer client.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
@@ -124,7 +122,7 @@ func TestClient_QueryNews(t *testing.T) {
 }
 
 func TestClient_QueryNewsByColumn(t *testing.T) {
-	client := NewClient(request.NewClient(request.DefaultConfig()))
+	client := NewClient()
 	defer client.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)

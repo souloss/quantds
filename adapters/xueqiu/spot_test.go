@@ -8,7 +8,7 @@ import (
 )
 
 func TestNewSpotAdapter(t *testing.T) {
-	client := xueqiu.NewClient(nil)
+	client := xueqiu.NewClient()
 	adapter := NewSpotAdapter(client)
 
 	if adapter == nil {
@@ -21,7 +21,7 @@ func TestNewSpotAdapter(t *testing.T) {
 }
 
 func TestSpotAdapter_Name(t *testing.T) {
-	client := xueqiu.NewClient(nil)
+	client := xueqiu.NewClient()
 	adapter := NewSpotAdapter(client)
 
 	if adapter.Name() != Name {
@@ -30,7 +30,7 @@ func TestSpotAdapter_Name(t *testing.T) {
 }
 
 func TestSpotAdapter_SupportedMarkets(t *testing.T) {
-	client := xueqiu.NewClient(nil)
+	client := xueqiu.NewClient()
 	adapter := NewSpotAdapter(client)
 
 	markets := adapter.SupportedMarkets()
@@ -40,7 +40,7 @@ func TestSpotAdapter_SupportedMarkets(t *testing.T) {
 }
 
 func TestSpotAdapter_CanHandle(t *testing.T) {
-	client := xueqiu.NewClient(nil)
+	client := xueqiu.NewClient()
 	adapter := NewSpotAdapter(client)
 
 	tests := []struct {

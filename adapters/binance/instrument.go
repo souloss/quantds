@@ -61,7 +61,7 @@ func (a *InstrumentAdapter) Fetch(ctx context.Context, _ request.Client, req ins
 			Symbol:    binance.FromBinanceSymbol(data.Symbol),
 			Code:      data.Symbol,
 			Name:      data.BaseAsset + "/" + data.QuoteAsset,
-			Exchange:  "BINANCE",
+			Exchange:  domain.ExchangeBinance,
 			Market:    data.Market,
 			AssetType: instrument.AssetTypeStock,
 			Currency:  data.QuoteAsset,

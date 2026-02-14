@@ -9,7 +9,7 @@ import (
 // API Rule: No pagination required for this endpoint
 // Note: This endpoint returns a large list of coins (10k+ items)
 func TestClient_GetCoinsList(t *testing.T) {
-	client := NewClient(nil)
+	client := NewClient()
 	ctx := context.Background()
 
 	params := &CoinsListRequest{
@@ -18,7 +18,7 @@ func TestClient_GetCoinsList(t *testing.T) {
 
 	result, _, err := client.GetCoinsList(ctx, params)
 	if err != nil {
-		t.Fatalf("GetCoinsList failed: %v", err)
+		checkAPIError(t, err)
 	}
 
 	t.Logf("Coins count: %d", len(result))

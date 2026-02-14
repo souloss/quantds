@@ -9,7 +9,7 @@ import (
 // API Rule: Searches across coins, exchanges, and categories
 // Note: Useful for finding coin IDs (e.g. 'bitcoin') from symbols ('BTC')
 func TestClient_Search(t *testing.T) {
-	client := NewClient(nil)
+	client := NewClient()
 	ctx := context.Background()
 
 	params := &SearchRequest{

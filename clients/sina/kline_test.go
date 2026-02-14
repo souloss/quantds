@@ -4,12 +4,10 @@ import (
 	"context"
 	"testing"
 	"time"
-
-	"github.com/souloss/quantds/request"
 )
 
 func TestClient_GetKline(t *testing.T) {
-	client := NewClient(request.NewClient(request.DefaultConfig()))
+	client := NewClient()
 	defer client.Close()
 
 	tests := []struct {
@@ -44,7 +42,7 @@ func TestClient_GetKline(t *testing.T) {
 }
 
 func TestClient_GetSpot(t *testing.T) {
-	client := NewClient(request.NewClient(request.DefaultConfig()))
+	client := NewClient()
 	defer client.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)

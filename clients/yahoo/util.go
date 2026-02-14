@@ -25,6 +25,9 @@ var USExchangeNames = map[string]string{
 // Accepts formats: AAPL, AAPL.US, AAPL.NASDAQ, AAPL.NYSE
 func ParseUSSymbol(symbol string) (code string, exchange string, ok bool) {
 	symbol = strings.ToUpper(strings.TrimSpace(symbol))
+	if symbol == "" {
+		return "", "", false
+	}
 
 	// Handle CODE.EXCHANGE format
 	if strings.Contains(symbol, ".") {

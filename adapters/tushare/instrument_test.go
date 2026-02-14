@@ -8,7 +8,7 @@ import (
 )
 
 func TestNewInstrumentAdapter(t *testing.T) {
-	client := tushare.NewClient(nil)
+	client := tushare.NewClient()
 	adapter := NewInstrumentAdapter(client)
 
 	if adapter == nil {
@@ -21,7 +21,7 @@ func TestNewInstrumentAdapter(t *testing.T) {
 }
 
 func TestInstrumentAdapter_Name(t *testing.T) {
-	client := tushare.NewClient(nil)
+	client := tushare.NewClient()
 	adapter := NewInstrumentAdapter(client)
 
 	if adapter.Name() != Name {
@@ -30,7 +30,7 @@ func TestInstrumentAdapter_Name(t *testing.T) {
 }
 
 func TestInstrumentAdapter_SupportedMarkets(t *testing.T) {
-	client := tushare.NewClient(nil)
+	client := tushare.NewClient()
 	adapter := NewInstrumentAdapter(client)
 
 	markets := adapter.SupportedMarkets()
@@ -40,7 +40,7 @@ func TestInstrumentAdapter_SupportedMarkets(t *testing.T) {
 }
 
 func TestInstrumentAdapter_CanHandle(t *testing.T) {
-	client := tushare.NewClient(nil)
+	client := tushare.NewClient()
 	adapter := NewInstrumentAdapter(client)
 
 	tests := []struct {

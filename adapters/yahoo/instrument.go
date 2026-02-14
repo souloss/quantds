@@ -73,14 +73,14 @@ func (a *InstrumentAdapter) Fetch(ctx context.Context, _ request.Client, req ins
 	instruments := make([]instrument.Instrument, 0, len(result.Instruments))
 	for _, data := range result.Instruments {
 		exchange := domain.ExchangeNASDAQ
-		if data.Exchange == "NYSE" {
+		if domain.Exchange(data.Exchange) == domain.ExchangeNYSE {
 			exchange = domain.ExchangeNYSE
-		} else if data.Exchange == "AMEX" {
+		} else if domain.Exchange(data.Exchange) == domain.ExchangeAMEX {
 			exchange = domain.ExchangeAMEX
 		}
 
 		assetType := instrument.AssetTypeStock
-		if data.AssetType == "ETF" {
+		if data.AssetType == string(instrument.AssetTypeETF) {
 			assetType = instrument.AssetTypeETF
 		}
 

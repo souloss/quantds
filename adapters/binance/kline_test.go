@@ -9,7 +9,7 @@ import (
 )
 
 func TestNewKlineAdapter(t *testing.T) {
-	client := binance.NewClient(nil)
+	client := binance.NewClient()
 	adapter := NewKlineAdapter(client)
 
 	if adapter == nil {
@@ -22,7 +22,7 @@ func TestNewKlineAdapter(t *testing.T) {
 }
 
 func TestKlineAdapter_Name(t *testing.T) {
-	client := binance.NewClient(nil)
+	client := binance.NewClient()
 	adapter := NewKlineAdapter(client)
 
 	if adapter.Name() != Name {
@@ -31,7 +31,7 @@ func TestKlineAdapter_Name(t *testing.T) {
 }
 
 func TestKlineAdapter_SupportedMarkets(t *testing.T) {
-	client := binance.NewClient(nil)
+	client := binance.NewClient()
 	adapter := NewKlineAdapter(client)
 
 	markets := adapter.SupportedMarkets()
@@ -41,7 +41,7 @@ func TestKlineAdapter_SupportedMarkets(t *testing.T) {
 }
 
 func TestKlineAdapter_CanHandle(t *testing.T) {
-	client := binance.NewClient(nil)
+	client := binance.NewClient()
 	adapter := NewKlineAdapter(client)
 
 	tests := []struct {
@@ -68,7 +68,7 @@ func TestKlineAdapter_CanHandle(t *testing.T) {
 }
 
 func TestNewSpotAdapter(t *testing.T) {
-	client := binance.NewClient(nil)
+	client := binance.NewClient()
 	adapter := NewSpotAdapter(client)
 
 	if adapter == nil {
@@ -81,7 +81,7 @@ func TestNewSpotAdapter(t *testing.T) {
 }
 
 func TestSpotAdapter_SupportedMarkets(t *testing.T) {
-	client := binance.NewClient(nil)
+	client := binance.NewClient()
 	adapter := NewSpotAdapter(client)
 
 	markets := adapter.SupportedMarkets()
@@ -91,7 +91,7 @@ func TestSpotAdapter_SupportedMarkets(t *testing.T) {
 }
 
 func TestSpotAdapter_CanHandle(t *testing.T) {
-	client := binance.NewClient(nil)
+	client := binance.NewClient()
 	adapter := NewSpotAdapter(client)
 
 	tests := []struct {

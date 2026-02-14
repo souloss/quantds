@@ -9,7 +9,7 @@ import (
 )
 
 func TestNewFinancialAdapter(t *testing.T) {
-	client := eastmoney.NewClient(nil)
+	client := eastmoney.NewClient()
 	adapter := NewFinancialAdapter(client)
 
 	if adapter == nil {
@@ -22,7 +22,7 @@ func TestNewFinancialAdapter(t *testing.T) {
 }
 
 func TestFinancialAdapter_Name(t *testing.T) {
-	client := eastmoney.NewClient(nil)
+	client := eastmoney.NewClient()
 	adapter := NewFinancialAdapter(client)
 
 	if adapter.Name() != Name {
@@ -31,7 +31,7 @@ func TestFinancialAdapter_Name(t *testing.T) {
 }
 
 func TestFinancialAdapter_SupportedMarkets(t *testing.T) {
-	client := eastmoney.NewClient(nil)
+	client := eastmoney.NewClient()
 	adapter := NewFinancialAdapter(client)
 
 	markets := adapter.SupportedMarkets()
@@ -41,7 +41,7 @@ func TestFinancialAdapter_SupportedMarkets(t *testing.T) {
 }
 
 func TestFinancialAdapter_CanHandle(t *testing.T) {
-	client := eastmoney.NewClient(nil)
+	client := eastmoney.NewClient()
 	adapter := NewFinancialAdapter(client)
 
 	tests := []struct {

@@ -9,7 +9,7 @@ import (
 // API Rule: Rate limit 20 req/2s
 // Geo-Restriction: OKX API may be blocked in US, China Mainland, etc.
 func TestClient_GetTicker(t *testing.T) {
-	client := NewClient(nil)
+	client := NewClient()
 	ctx := context.Background()
 
 	params := &TickerRequest{
