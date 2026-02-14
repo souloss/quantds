@@ -16,7 +16,7 @@
 
 <!-- START_STATUS_BADGES -->
 
-![](https://img.shields.io/badge/Binance-%E2%9C%93%20Crypto-brightgreen) ![](https://img.shields.io/badge/BSE-%E2%9C%93%20A%E8%82%A1-brightgreen) ![](https://img.shields.io/badge/Cninfo-%E2%9C%93%20A%E8%82%A1-brightgreen) ![](https://img.shields.io/badge/EastMoney-%E2%9C%93%20A%E8%82%A1-brightgreen) ![](https://img.shields.io/badge/EastMoneyHK-%E2%9C%93%20%E6%B8%AF%E8%82%A1-brightgreen) ![](https://img.shields.io/badge/Sina-%E2%9C%93%20A%E8%82%A1%20%7C%20%E6%B8%AF%E8%82%A1-brightgreen) ![](https://img.shields.io/badge/SSE-%E2%9C%93%20A%E8%82%A1-brightgreen) ![](https://img.shields.io/badge/SZSE-%E2%9C%93%20A%E8%82%A1-brightgreen) ![](https://img.shields.io/badge/Tencent-%E2%9C%93%20A%E8%82%A1%20%7C%20%E6%B8%AF%E8%82%A1%20%7C%20%E7%BE%8E%E8%82%A1-brightgreen) ![](https://img.shields.io/badge/Tushare-%E2%9C%93%20A%E8%82%A1-brightgreen) ![](https://img.shields.io/badge/Xueqiu-%F0%9F%9F%A1%20Beta-yellow) ![](https://img.shields.io/badge/Yahoo-%E2%9C%93%20A%E8%82%A1%20%7C%20%E6%B8%AF%E8%82%A1%20%7C%20%E7%BE%8E%E8%82%A1-brightgreen) 
+![](https://img.shields.io/badge/Binance-%E2%9C%93%20Crypto-brightgreen) ![](https://img.shields.io/badge/BSE-%E2%9C%93%20A%E8%82%A1-brightgreen) ![](https://img.shields.io/badge/Cninfo-%E2%9C%93%20A%E8%82%A1-brightgreen) ![](https://img.shields.io/badge/EastMoney-%E2%9C%93%20A%E8%82%A1-brightgreen) ![](https://img.shields.io/badge/EastMoneyHK-%E2%9C%93%20%E6%B8%AF%E8%82%A1-brightgreen) ![](https://img.shields.io/badge/Okx-%E2%9C%93%20Ready-brightgreen) ![](https://img.shields.io/badge/Sina-%E2%9C%93%20A%E8%82%A1%20%7C%20%E6%B8%AF%E8%82%A1-brightgreen) ![](https://img.shields.io/badge/SSE-%E2%9C%93%20A%E8%82%A1-brightgreen) ![](https://img.shields.io/badge/SZSE-%E2%9C%93%20A%E8%82%A1-brightgreen) ![](https://img.shields.io/badge/Tencent-%E2%9C%93%20A%E8%82%A1%20%7C%20%E6%B8%AF%E8%82%A1%20%7C%20%E7%BE%8E%E8%82%A1-brightgreen) ![](https://img.shields.io/badge/Tushare-%E2%9C%93%20A%E8%82%A1-brightgreen) ![](https://img.shields.io/badge/Xueqiu-%F0%9F%9F%A1%20Beta-yellow) ![](https://img.shields.io/badge/Yahoo-%E2%9C%93%20A%E8%82%A1%20%7C%20%E6%B8%AF%E8%82%A1%20%7C%20%E7%BE%8E%E8%82%A1-brightgreen) 
 
 <!-- END_STATUS_BADGES -->
 
@@ -24,18 +24,19 @@
 
 | 数据源 (Provider) | K线 (Kline) | 实时行情 (Spot) | 证券列表 (Instrument) | 证券详情 (Profile) | 财务数据 (Financial) | 公告资讯 (News) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Binance** | ✅ | ✅ | - | - | - | - |
+| **Binance** | ✅ | ✅ | ✅ | - | - | - |
 | **BSE** | - | - | ✅ | - | - | - |
 | **Cninfo** | - | - | ✅ | - | - | ✅ |
 | **EastMoney** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **EastMoneyHK** | ✅ | ✅ | - | - | - | - |
+| **EastMoneyHK** | ✅ | ✅ | ✅ | - | - | - |
+| **Okx** | ✅ | ✅ | ✅ | - | - | - |
 | **Sina** | ✅ | ✅ | - | - | - | - |
 | **SSE** | - | - | ✅ | - | - | - |
 | **SZSE** | - | - | ✅ | - | - | - |
 | **Tencent** | ✅ | ✅ | - | - | - | - |
 | **Tushare** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Xueqiu** | ✅ | ✅ | ✅ | ✅ | - | - |
-| **Yahoo** | ✅ | ✅ | - | - | - | - |
+| **Yahoo** | ✅ | ✅ | ✅ | - | - | - |
 
 
 <!-- END_SUPPORTED_TABLE -->
