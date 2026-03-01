@@ -221,6 +221,30 @@ func TestClient_GetStockCompany(t *testing.T) {
 	}
 }
 
+func TestClient_GetLatestTradeDate(t *testing.T) {
+	client := newTestClient(t)
+	defer client.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	date, err := client.GetLatestTradeDate(ctx)
+	skipOnTokenError(t, err)
+	if err != nil {
+		t.Fatalf("GetLatestTradeDate() error = %v", err)
+	}
+
+	if date == "" {
+		t.Fatal("Expected non-empty date")
+	}
+
+	t.Logf("Latest trade date: %s", date)
+
+	if len(date) != 8 {
+		t.Errorf("Expected date in YYYYMMDD format (8 chars), got %q", date)
+	}
+}
+
 func TestNewClient_EnvVars(t *testing.T) {
 	// 测试环境变量读取
 	origURL := os.Getenv("TUSHARE_BASE_URL")

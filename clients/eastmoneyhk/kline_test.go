@@ -1,7 +1,9 @@
 package eastmoneyhk
 
 import (
+	"context"
 	"testing"
+	"time"
 )
 
 func TestNewClient(t *testing.T) {
@@ -117,6 +119,60 @@ func TestToAdjust(t *testing.T) {
 			result := ToAdjust(tt.adjust)
 			if result != tt.expected {
 				t.Errorf("ToAdjust(%s) = %s, want %s", tt.adjust, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestClient_GetKline(t *testing.T) {
+	client := NewClient()
+	defer client.Close()
+
+	tests := []struct {
+		name   string
+		params *KlineParams
+	}{
+		{
+			"00700 daily",
+			&KlineParams{Symbol: "00700.HK", Period: Period1d, StartDate: "20240101", EndDate: "20240131"},
+		},
+		{
+			"00941 weekly",
+			&KlineParams{Symbol: "00941", Period: Period1w, StartDate: "20240101", EndDate: "20240630"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+
+			result, record, err := client.GetKline(ctx, tt.params)
+			if err != nil {
+				checkAPIError(t, err)
+				return
+			}
+
+			if record == nil {
+				t.Fatal("record is nil")
+			}
+
+			t.Logf("Symbol: %s, Count: %d", result.Symbol, result.Count)
+
+			if len(result.Data) == 0 {
+				t.Log("Warning: no kline data returned")
+				return
+			}
+
+			kline := result.Data[0]
+			t.Logf("First bar: Date=%s, Open=%.2f, High=%.2f, Low=%.2f, Close=%.2f, Volume=%.0f",
+				kline.Date, kline.Open, kline.High, kline.Low, kline.Close, kline.Volume)
+
+			if kline.Open <= 0 {
+				t.Errorf("Expected Open > 0, got %f", kline.Open)
+			}
+			if kline.Close <= 0 {
+				t.Errorf("Expected Close > 0, got %f", kline.Close)
 			}
 		})
 	}

@@ -59,6 +59,55 @@ func TestClient_GetStockList(t *testing.T) {
 	}
 }
 
+func TestClient_GetInstruments(t *testing.T) {
+	client := NewClient()
+	defer client.Close()
+
+	tests := []struct {
+		name   string
+		params *InstrumentParams
+	}{
+		{"all", &InstrumentParams{PageSize: 100}},
+		{"SH", &InstrumentParams{Market: "SH", PageSize: 50}},
+		{"SZ", &InstrumentParams{Market: "SZ", PageSize: 50}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+
+			result, record, err := client.GetInstruments(ctx, tt.params)
+			if err != nil {
+				checkAPIError(t, err)
+				return
+			}
+
+			if record == nil {
+				t.Fatal("record is nil")
+			}
+
+			if result == nil {
+				t.Fatal("result is nil")
+			}
+
+			t.Logf("Got %d instruments (total: %d)", len(result.Data), result.Total)
+
+			if len(result.Data) == 0 {
+				t.Log("Warning: no instruments returned")
+				return
+			}
+
+			inst := result.Data[0]
+			t.Logf("First: code=%s, name=%s, exchange=%s", inst.Code, inst.Name, inst.Exchange)
+
+			if inst.Code == "" {
+				t.Error("first instrument code is empty")
+			}
+		})
+	}
+}
+
 func min(a, b int) int {
 	if a < b {
 		return a

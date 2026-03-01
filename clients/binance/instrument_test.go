@@ -7,6 +7,7 @@ import (
 
 func TestClient_GetExchangeInfo(t *testing.T) {
 	client := NewClient()
+	defer client.Close()
 	ctx := context.Background()
 
 	result, _, err := client.GetExchangeInfo(ctx)
@@ -23,7 +24,8 @@ func TestClient_GetExchangeInfo(t *testing.T) {
 		t.Fatal("Expected instruments, got 0")
 	}
 
-	// Check if BTCUSDT exists
+	t.Logf("Total instruments: %d", result.Total)
+
 	found := false
 	for _, inst := range result.Instruments {
 		if inst.Symbol == "BTCUSDT" {
@@ -45,9 +47,9 @@ func TestClient_GetExchangeInfo(t *testing.T) {
 
 func TestClient_GetInstruments_Filter(t *testing.T) {
 	client := NewClient()
+	defer client.Close()
 	ctx := context.Background()
 
-	// Test filter by Quote Asset
 	params := &InstrumentParams{
 		Quote: "USDT",
 	}
@@ -62,9 +64,72 @@ func TestClient_GetInstruments_Filter(t *testing.T) {
 		t.Error("Expected instruments with quote USDT, got 0")
 	}
 
+	t.Logf("USDT pairs count: %d", len(result.Instruments))
+
 	for _, inst := range result.Instruments {
 		if inst.QuoteAsset != "USDT" {
-			t.Errorf("Expected quote asset USDT, got %s", inst.QuoteAsset)
+			t.Errorf("Expected quote asset USDT, got %s for %s", inst.QuoteAsset, inst.Symbol)
 		}
+	}
+}
+
+func TestClient_GetAllSpotInstruments(t *testing.T) {
+	client := NewClient()
+	defer client.Close()
+	ctx := context.Background()
+
+	result, _, err := client.GetAllSpotInstruments(ctx)
+	if err != nil {
+		checkAPIError(t, err)
+		return
+	}
+
+	if len(result.Instruments) == 0 {
+		t.Fatal("Expected spot instruments, got 0")
+	}
+
+	t.Logf("Total spot instruments (TRADING): %d", result.Total)
+
+	for _, inst := range result.Instruments {
+		if inst.Status != "TRADING" {
+			t.Errorf("Expected status TRADING, got %s for %s", inst.Status, inst.Symbol)
+		}
+	}
+}
+
+func TestClient_GetInstrumentsByQuote(t *testing.T) {
+	client := NewClient()
+	defer client.Close()
+	ctx := context.Background()
+
+	tests := []struct {
+		quote       string
+		minExpected int
+	}{
+		{"USDT", 10},
+		{"BTC", 5},
+		{"ETH", 2},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.quote, func(t *testing.T) {
+			result, _, err := client.GetInstrumentsByQuote(ctx, tt.quote)
+			if err != nil {
+				checkAPIError(t, err)
+				return
+			}
+
+			t.Logf("%s pairs (TRADING): %d", tt.quote, len(result.Instruments))
+
+			if len(result.Instruments) < tt.minExpected {
+				t.Errorf("Expected at least %d %s pairs, got %d", tt.minExpected, tt.quote, len(result.Instruments))
+			}
+
+			for _, inst := range result.Instruments {
+				if inst.QuoteAsset != tt.quote {
+					t.Errorf("Expected quote %s, got %s for %s", tt.quote, inst.QuoteAsset, inst.Symbol)
+				}
+			}
+		})
 	}
 }

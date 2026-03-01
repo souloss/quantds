@@ -1,6 +1,7 @@
 package yahoo
 
 import (
+	"context"
 	"testing"
 	"time"
 )
@@ -119,6 +120,60 @@ func TestToYahooSymbol(t *testing.T) {
 				if result != tt.expected {
 					t.Errorf("ToYahooSymbol(%s) = %s, want %s", tt.input, result, tt.expected)
 				}
+			}
+		})
+	}
+}
+
+func TestClient_GetKline(t *testing.T) {
+	client := NewClient()
+	defer client.Close()
+	ctx := context.Background()
+
+	tests := []struct {
+		name   string
+		params *KlineParams
+	}{
+		{
+			"AAPL daily 1mo",
+			&KlineParams{Symbol: "AAPL", Interval: Interval1d, Range: Range1mo},
+		},
+		{
+			"MSFT weekly 1y",
+			&KlineParams{Symbol: "MSFT", Interval: Interval1w, Range: Range1y},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, record, err := client.GetKline(ctx, tt.params)
+			if err != nil {
+				checkAPIError(t, err)
+				return
+			}
+
+			if record == nil {
+				t.Fatal("record is nil")
+			}
+
+			if len(result.Data) == 0 {
+				t.Fatal("Expected kline data, got 0")
+			}
+
+			t.Logf("Symbol: %s, Timezone: %s, Count: %d", result.Symbol, result.Timezone, result.Count)
+
+			kline := result.Data[0]
+			t.Logf("First bar: Open=%.2f, High=%.2f, Low=%.2f, Close=%.2f, Volume=%.0f",
+				kline.Open, kline.High, kline.Low, kline.Close, kline.Volume)
+
+			if kline.Open <= 0 {
+				t.Errorf("Expected Open > 0, got %f", kline.Open)
+			}
+			if kline.Close <= 0 {
+				t.Errorf("Expected Close > 0, got %f", kline.Close)
+			}
+			if kline.High < kline.Low {
+				t.Errorf("Expected High >= Low, got High=%f, Low=%f", kline.High, kline.Low)
 			}
 		})
 	}

@@ -251,6 +251,28 @@ func TestClient_GetKline(t *testing.T) {
 	}
 }
 
+func TestFromBinanceSymbol(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"BTCUSDT", "BTCUSDT.CRYPTO.BINANCE"},
+		{"ETHUSDT", "ETHUSDT.CRYPTO.BINANCE"},
+		{"BNBBTC", "BNBBTC.CRYPTO.BINANCE"},
+		{"INVALID", "INVALID"},
+		{"", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			result := FromBinanceSymbol(tt.input)
+			if result != tt.expected {
+				t.Errorf("FromBinanceSymbol(%s) = %s, want %s", tt.input, result, tt.expected)
+			}
+		})
+	}
+}
+
 func TestClient_GetKline_Error(t *testing.T) {
 	client := NewClient()
 	ctx := context.Background()
