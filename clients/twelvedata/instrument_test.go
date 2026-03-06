@@ -73,6 +73,23 @@ func TestClient_GetFundsList(t *testing.T) {
 	}
 }
 
+func TestClient_GetCryptocurrenciesList(t *testing.T) {
+	skipIfNoAPIKey(t)
+	client := NewClient()
+	defer client.Close()
+
+	result, _, err := client.GetCryptocurrenciesList(context.Background())
+	if err != nil {
+		checkAPIError(t, err)
+		return
+	}
+
+	t.Logf("Cryptocurrencies: %d", result.Count)
+	if len(result.Data) > 0 {
+		t.Logf("First: Symbol=%s, Name=%s", result.Data[0].Symbol, result.Data[0].Name)
+	}
+}
+
 func TestClient_GetETFList(t *testing.T) {
 	skipIfNoAPIKey(t)
 	client := NewClient()

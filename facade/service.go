@@ -5,32 +5,42 @@ import (
 	"fmt"
 	"time"
 
+	alphavantageadapter "github.com/souloss/quantds/adapters/alphavantage"
 	binanceadapter "github.com/souloss/quantds/adapters/binance"
 	bseadapter "github.com/souloss/quantds/adapters/bse"
 	cninfoadapter "github.com/souloss/quantds/adapters/cninfo"
 	eastmoneyadapter "github.com/souloss/quantds/adapters/eastmoney"
 	eastmoneyhkadapter "github.com/souloss/quantds/adapters/eastmoneyhk"
+	eodhadadapter "github.com/souloss/quantds/adapters/eodhd"
+	finnhubadapter "github.com/souloss/quantds/adapters/finnhub"
+	okxadapter "github.com/souloss/quantds/adapters/okx"
+	polygonadapter "github.com/souloss/quantds/adapters/polygon"
 	sinaadapter "github.com/souloss/quantds/adapters/sina"
 	sseadapter "github.com/souloss/quantds/adapters/sse"
 	szseadapter "github.com/souloss/quantds/adapters/szse"
 	tencentadapter "github.com/souloss/quantds/adapters/tencent"
 	tushareadapter "github.com/souloss/quantds/adapters/tushare"
+	twelvedataadapter "github.com/souloss/quantds/adapters/twelvedata"
 	xueqiuadapter "github.com/souloss/quantds/adapters/xueqiu"
 	yahooadapter "github.com/souloss/quantds/adapters/yahoo"
-	okxadapter "github.com/souloss/quantds/adapters/okx"
+	alphavantageclient "github.com/souloss/quantds/clients/alphavantage"
 	binanceclient "github.com/souloss/quantds/clients/binance"
 	bseclient "github.com/souloss/quantds/clients/bse"
 	cninfoclient "github.com/souloss/quantds/clients/cninfo"
 	eastmoneyclient "github.com/souloss/quantds/clients/eastmoney"
 	eastmoneyhkclient "github.com/souloss/quantds/clients/eastmoneyhk"
+	eodhdclient "github.com/souloss/quantds/clients/eodhd"
+	finnhubclient "github.com/souloss/quantds/clients/finnhub"
+	okxclient "github.com/souloss/quantds/clients/okx"
+	polygonclient "github.com/souloss/quantds/clients/polygon"
 	sinaclient "github.com/souloss/quantds/clients/sina"
 	sseclient "github.com/souloss/quantds/clients/sse"
 	szseclient "github.com/souloss/quantds/clients/szse"
 	tencentclient "github.com/souloss/quantds/clients/tencent"
 	tushareclient "github.com/souloss/quantds/clients/tushare"
+	twelvedataclient "github.com/souloss/quantds/clients/twelvedata"
 	xueqiuclient "github.com/souloss/quantds/clients/xueqiu"
 	yahooclient "github.com/souloss/quantds/clients/yahoo"
-	okxclient "github.com/souloss/quantds/clients/okx"
 	"github.com/souloss/quantds/domain"
 	"github.com/souloss/quantds/domain/announcement"
 	"github.com/souloss/quantds/domain/financial"
@@ -229,7 +239,7 @@ func (s *Service) initManagers() {
 	)
 
 	// ========== 美股 (US) ==========
-	// K线 - 支持 yahoo
+	// K线 - 支持 yahoo, finnhub, polygon, alphavantage, twelvedata, eodhd
 	s.klineManagers[domain.MarketUS] = manager.NewManager[kline.Request, kline.Response](
 		manager.WithTwoLevelCache[kline.Request, kline.Response](time.Minute, CacheTTLKline),
 		manager.WithMetrics[kline.Request, kline.Response](s.metrics),
@@ -237,9 +247,29 @@ func (s *Service) initManagers() {
 			yahooadapter.NewKlineAdapter(yahooclient.NewClient(yahooclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHighest),
 		),
+		manager.WithProvider[kline.Request, kline.Response](
+			finnhubadapter.NewKlineAdapter(finnhubclient.NewClient()),
+			manager.WithPriority(PriorityHigh),
+		),
+		manager.WithProvider[kline.Request, kline.Response](
+			polygonadapter.NewKlineAdapter(polygonclient.NewClient()),
+			manager.WithPriority(PriorityMedium),
+		),
+		manager.WithProvider[kline.Request, kline.Response](
+			alphavantageadapter.NewKlineAdapter(alphavantageclient.NewClient()),
+			manager.WithPriority(PriorityLow),
+		),
+		manager.WithProvider[kline.Request, kline.Response](
+			twelvedataadapter.NewKlineAdapter(twelvedataclient.NewClient()),
+			manager.WithPriority(PriorityLow),
+		),
+		manager.WithProvider[kline.Request, kline.Response](
+			eodhadadapter.NewKlineAdapter(eodhdclient.NewClient()),
+			manager.WithPriority(PriorityLowest),
+		),
 	)
 
-	// 实时行情 - 支持 yahoo
+	// 实时行情 - 支持 yahoo, finnhub, polygon, alphavantage, twelvedata, eodhd
 	s.spotManagers[domain.MarketUS] = manager.NewManager[spot.Request, spot.Response](
 		manager.WithTwoLevelCache[spot.Request, spot.Response](time.Minute, CacheTTLSpot),
 		manager.WithMetrics[spot.Request, spot.Response](s.metrics),
@@ -247,15 +277,51 @@ func (s *Service) initManagers() {
 			yahooadapter.NewSpotAdapter(yahooclient.NewClient(yahooclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHighest),
 		),
+		manager.WithProvider[spot.Request, spot.Response](
+			finnhubadapter.NewSpotAdapter(finnhubclient.NewClient()),
+			manager.WithPriority(PriorityHigh),
+		),
+		manager.WithProvider[spot.Request, spot.Response](
+			polygonadapter.NewSpotAdapter(polygonclient.NewClient()),
+			manager.WithPriority(PriorityMedium),
+		),
+		manager.WithProvider[spot.Request, spot.Response](
+			alphavantageadapter.NewSpotAdapter(alphavantageclient.NewClient()),
+			manager.WithPriority(PriorityLow),
+		),
+		manager.WithProvider[spot.Request, spot.Response](
+			twelvedataadapter.NewSpotAdapter(twelvedataclient.NewClient()),
+			manager.WithPriority(PriorityLow),
+		),
+		manager.WithProvider[spot.Request, spot.Response](
+			eodhadadapter.NewSpotAdapter(eodhdclient.NewClient()),
+			manager.WithPriority(PriorityLowest),
+		),
 	)
 
-	// 证券列表 - 支持 yahoo
+	// 证券列表 - 支持 yahoo, finnhub, polygon, twelvedata, eodhd
 	s.instrumentManagers[domain.MarketUS] = manager.NewManager[instrument.Request, instrument.Response](
 		manager.WithTwoLevelCache[instrument.Request, instrument.Response](time.Minute, CacheTTLList),
 		manager.WithMetrics[instrument.Request, instrument.Response](s.metrics),
 		manager.WithProvider[instrument.Request, instrument.Response](
 			yahooadapter.NewInstrumentAdapter(yahooclient.NewClient(yahooclient.WithHTTPClient(s.httpClient))),
 			manager.WithPriority(PriorityHighest),
+		),
+		manager.WithProvider[instrument.Request, instrument.Response](
+			finnhubadapter.NewInstrumentAdapter(finnhubclient.NewClient()),
+			manager.WithPriority(PriorityHigh),
+		),
+		manager.WithProvider[instrument.Request, instrument.Response](
+			polygonadapter.NewInstrumentAdapter(polygonclient.NewClient()),
+			manager.WithPriority(PriorityMedium),
+		),
+		manager.WithProvider[instrument.Request, instrument.Response](
+			twelvedataadapter.NewInstrumentAdapter(twelvedataclient.NewClient()),
+			manager.WithPriority(PriorityLow),
+		),
+		manager.WithProvider[instrument.Request, instrument.Response](
+			eodhadadapter.NewInstrumentAdapter(eodhdclient.NewClient()),
+			manager.WithPriority(PriorityLowest),
 		),
 	)
 
@@ -332,6 +398,53 @@ func (s *Service) initManagers() {
 			manager.WithPriority(PriorityHigh),
 		),
 	)
+
+	// ========== 外汇 (Forex) ==========
+	// K线 - 支持 finnhub, alphavantage, twelvedata
+	s.klineManagers[domain.MarketForex] = manager.NewManager[kline.Request, kline.Response](
+		manager.WithTwoLevelCache[kline.Request, kline.Response](time.Minute, CacheTTLKline),
+		manager.WithMetrics[kline.Request, kline.Response](s.metrics),
+		manager.WithProvider[kline.Request, kline.Response](
+			finnhubadapter.NewKlineAdapter(finnhubclient.NewClient()),
+			manager.WithPriority(PriorityHighest),
+		),
+		manager.WithProvider[kline.Request, kline.Response](
+			alphavantageadapter.NewKlineAdapter(alphavantageclient.NewClient()),
+			manager.WithPriority(PriorityMedium),
+		),
+		manager.WithProvider[kline.Request, kline.Response](
+			twelvedataadapter.NewKlineAdapter(twelvedataclient.NewClient()),
+			manager.WithPriority(PriorityLow),
+		),
+	)
+
+	// 实时行情 - 支持 finnhub, twelvedata
+	s.spotManagers[domain.MarketForex] = manager.NewManager[spot.Request, spot.Response](
+		manager.WithTwoLevelCache[spot.Request, spot.Response](time.Minute, CacheTTLSpot),
+		manager.WithMetrics[spot.Request, spot.Response](s.metrics),
+		manager.WithProvider[spot.Request, spot.Response](
+			finnhubadapter.NewSpotAdapter(finnhubclient.NewClient()),
+			manager.WithPriority(PriorityHighest),
+		),
+		manager.WithProvider[spot.Request, spot.Response](
+			twelvedataadapter.NewSpotAdapter(twelvedataclient.NewClient()),
+			manager.WithPriority(PriorityMedium),
+		),
+	)
+
+	// 证券列表 - 支持 finnhub, twelvedata
+	s.instrumentManagers[domain.MarketForex] = manager.NewManager[instrument.Request, instrument.Response](
+		manager.WithTwoLevelCache[instrument.Request, instrument.Response](time.Minute, CacheTTLList),
+		manager.WithMetrics[instrument.Request, instrument.Response](s.metrics),
+		manager.WithProvider[instrument.Request, instrument.Response](
+			finnhubadapter.NewInstrumentAdapter(finnhubclient.NewClient()),
+			manager.WithPriority(PriorityHighest),
+		),
+		manager.WithProvider[instrument.Request, instrument.Response](
+			twelvedataadapter.NewInstrumentAdapter(twelvedataclient.NewClient()),
+			manager.WithPriority(PriorityMedium),
+		),
+	)
 }
 
 // getMarketFromSymbol 从 symbol 解析市场。
@@ -406,6 +519,8 @@ func (s *Service) GetInstruments(ctx context.Context, req instrument.Request) (i
 			market = domain.MarketHK
 		case "CRYPTO", "BINANCE":
 			market = domain.MarketCrypto
+		case "FOREX", "FX":
+			market = domain.MarketForex
 		default:
 			// Check if it's a crypto quote asset (USDT, BUSD, etc.)
 			if binanceclient.GetQuoteAsset(req.Market+"USDT") != "" {
