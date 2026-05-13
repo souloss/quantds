@@ -10,11 +10,11 @@ import (
 // Tushare API: income
 // 获取上市公司利润表数据。
 type IncomeParams struct {
-	TSCode    string // 股票代码 (e.g., "000001.SZ")
-	AnnDate   string // 公告日期 (YYYYMMDD)
-	StartDate string // 报告期起始日期 (YYYYMMDD)
-	EndDate   string // 报告期结束日期 (YYYYMMDD)
-	Period    string // 报告期 (e.g., "20241231")
+	TSCode     string // 股票代码 (e.g., "000001.SZ")
+	AnnDate    string // 公告日期 (YYYYMMDD)
+	StartDate  string // 报告期起始日期 (YYYYMMDD)
+	EndDate    string // 报告期结束日期 (YYYYMMDD)
+	Period     string // 报告期 (e.g., "20241231")
 	ReportType string // 报告类型: 1=合并报表, 4=调整后合并报表
 }
 

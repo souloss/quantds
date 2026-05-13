@@ -8,7 +8,6 @@ import (
 	"github.com/souloss/quantds/domain"
 	"github.com/souloss/quantds/domain/spot"
 	"github.com/souloss/quantds/manager"
-	"github.com/souloss/quantds/request"
 )
 
 type SpotAdapter struct {
@@ -35,7 +34,7 @@ func (a *SpotAdapter) CanHandle(symbol string) bool {
 	return false
 }
 
-func (a *SpotAdapter) Fetch(ctx context.Context, _ request.Client, req spot.Request) (spot.Response, *manager.RequestTrace, error) {
+func (a *SpotAdapter) Fetch(ctx context.Context, req spot.Request) (spot.Response, *manager.RequestTrace, error) {
 	trace := manager.NewRequestTrace(Name)
 
 	quotes := make([]spot.Quote, 0, len(req.Symbols))
@@ -54,23 +53,24 @@ func (a *SpotAdapter) Fetch(ctx context.Context, _ request.Client, req spot.Requ
 		ts, _ := time.Parse("2006-01-02", result.LatestDay)
 
 		quotes = append(quotes, spot.Quote{
-			Symbol:   s,
-			Latest:   result.Price,
-			Open:     result.Open,
-			High:     result.High,
-			Low:      result.Low,
-			PreClose: result.PreviousClose,
-			Change:   result.Change,
-			Volume:   result.Volume,
+			Symbol:    s,
+			Latest:    result.Price,
+			Open:      result.Open,
+			High:      result.High,
+			Low:       result.Low,
+			PreClose:  result.PreviousClose,
+			Change:    result.Change,
+			Volume:    result.Volume,
 			Timestamp: ts,
 		})
 	}
 
 	trace.Finish()
 	return spot.Response{
-		Quotes: quotes,
-		Total:  len(quotes),
-		Source: Name,
+		Quotes:      quotes,
+		Total:       len(quotes),
+		Source:      Name,
+		DataVersion: 1,
 	}, trace, nil
 }
 

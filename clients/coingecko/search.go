@@ -12,7 +12,7 @@ import (
 // API Endpoint Constants
 const (
 	EndpointSearch = "/search"
-	
+
 	// Query Parameters
 	ParamQuery = "query"
 )

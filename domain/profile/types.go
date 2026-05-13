@@ -19,8 +19,9 @@ func (r Request) CacheKey() string {
 
 // Response represents a security profile response.
 type Response struct {
-	Data   Profile // 个股档案数据
-	Source string  // 数据源名称
+	Data        Profile // 个股档案数据
+	Source      string  // 数据源名称
+	DataVersion int     // 数据格式版本（当前为1）
 }
 
 // Profile represents detailed information about a security,
@@ -94,16 +95,16 @@ type Profile struct {
 	ConceptTags   []string // 概念标签列表
 
 	// 公司信息
-	Province      string // 所属省份
-	City          string // 所属城市
-	Address       string // 注册地址
-	Website       string // 公司网址
-	Phone         string // 联系电话
-	Fax           string // 传真
-	Email         string // 电子邮箱
-	Chairman      string // 董事长
-	CEO           string // 总经理/CEO
-	Secretary     string // 董秘
+	Province      string  // 所属省份
+	City          string  // 所属城市
+	Address       string  // 注册地址
+	Website       string  // 公司网址
+	Phone         string  // 联系电话
+	Fax           string  // 传真
+	Email         string  // 电子邮箱
+	Chairman      string  // 董事长
+	CEO           string  // 总经理/CEO
+	Secretary     string  // 董秘
 	RegCapital    float64 // 注册资本（万元）
 	SetupDate     string  // 成立日期
 	Employees     int     // 员工人数

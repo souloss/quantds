@@ -8,13 +8,19 @@ import (
 	"github.com/souloss/quantds/domain"
 	"github.com/souloss/quantds/domain/kline"
 	"github.com/souloss/quantds/manager"
-	"github.com/souloss/quantds/request"
 )
 
 const Name = "alphavantage"
 
 var supportedMarkets = []domain.Market{domain.MarketUS, domain.MarketForex}
 
+// KlineAdapter adapts AlphaVantage daily time series data to kline domain.
+//
+// Known limitation: AlphaVantage free API only returns the latest 100 data points
+// when using "compact" outputsize. For full historical data, a premium API key
+// with "full" outputsize is required. The adapter currently uses "compact" mode.
+// Additionally, AlphaVantage has API rate limits (5 calls/minute for free tier,
+// 75 calls/minute for premium).
 type KlineAdapter struct {
 	client *alphavantage.Client
 }
@@ -39,7 +45,7 @@ func (a *KlineAdapter) CanHandle(symbol string) bool {
 	return false
 }
 
-func (a *KlineAdapter) Fetch(ctx context.Context, _ request.Client, req kline.Request) (kline.Response, *manager.RequestTrace, error) {
+func (a *KlineAdapter) Fetch(ctx context.Context, req kline.Request) (kline.Response, *manager.RequestTrace, error) {
 	trace := manager.NewRequestTrace(Name)
 
 	var sym domain.Symbol
@@ -75,9 +81,10 @@ func (a *KlineAdapter) Fetch(ctx context.Context, _ request.Client, req kline.Re
 
 	trace.Finish()
 	return kline.Response{
-		Symbol: req.Symbol,
-		Bars:   bars,
-		Source: Name,
+		Symbol:      req.Symbol,
+		Bars:        bars,
+		Source:      Name,
+		DataVersion: 1,
 	}, trace, nil
 }
 

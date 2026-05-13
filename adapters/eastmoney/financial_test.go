@@ -93,10 +93,10 @@ func TestGetString(t *testing.T) {
 
 func TestGetFloat(t *testing.T) {
 	data := map[string]interface{}{
-		"float_field":  float64(3.14),
-		"str_field":    "2.718",
-		"nil_field":    nil,
-		"invalid_str":  "abc",
+		"float_field": float64(3.14),
+		"str_field":   "2.718",
+		"nil_field":   nil,
+		"invalid_str": "abc",
 	}
 
 	tests := []struct {

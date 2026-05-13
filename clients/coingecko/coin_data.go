@@ -12,14 +12,14 @@ import (
 // API Endpoint Constants
 const (
 	EndpointCoinData = "/coins/%s"
-	
+
 	// Query Parameters
-	ParamLocalization   = "localization"
-	ParamTickers        = "tickers"
-	ParamMarketData     = "market_data"
-	ParamCommunityData  = "community_data"
-	ParamDeveloperData  = "developer_data"
-	ParamSparkline      = "sparkline"
+	ParamLocalization  = "localization"
+	ParamTickers       = "tickers"
+	ParamMarketData    = "market_data"
+	ParamCommunityData = "community_data"
+	ParamDeveloperData = "developer_data"
+	ParamSparkline     = "sparkline"
 )
 
 // CoinDataRequest represents parameters for coin data request
@@ -35,34 +35,34 @@ type CoinDataRequest struct {
 
 // CoinDataResponse represents the response structure
 type CoinDataResponse struct {
-	ID                 string                 `json:"id"`
-	Symbol             string                 `json:"symbol"`
-	Name               string                 `json:"name"`
-	WebSlug            string                 `json:"web_slug"`
-	AssetPlatformID    string                 `json:"asset_platform_id"`
-	Platforms          map[string]string      `json:"platforms"`
-	DetailPlatforms    map[string]interface{} `json:"detail_platforms"`
-	BlockTimeInMinutes int32                  `json:"block_time_in_minutes"`
-	HashingAlgorithm   string                 `json:"hashing_algorithm"`
-	Categories         []string               `json:"categories"`
-	Description        map[string]string      `json:"description"`
-	Links              map[string]interface{} `json:"links"`
-	Image              map[string]string      `json:"image"`
-	CountryOrigin      string                 `json:"country_origin"`
-	GenesisDate        string                 `json:"genesis_date"`
-	SentimentVotesUp   float64                `json:"sentiment_votes_up_percentage"`
-	SentimentVotesDown float64                `json:"sentiment_votes_down_percentage"`
-	MarketCapRank      int32                  `json:"market_cap_rank"`
-	CoingeckoRank      int32                  `json:"coingecko_rank"`
-	CoingeckoScore     float64                `json:"coingecko_score"`
-	DeveloperScore     float64                `json:"developer_score"`
-	CommunityScore     float64                `json:"community_score"`
-	LiquidityScore     float64                `json:"liquidity_score"`
-	PublicInterestScore float64               `json:"public_interest_score"`
-	MarketData         *MarketData            `json:"market_data"`
-	CommunityData      *CommunityData         `json:"community_data"`
-	DeveloperData      *DeveloperData         `json:"developer_data"`
-	LastUpdated        string                 `json:"last_updated"`
+	ID                  string                 `json:"id"`
+	Symbol              string                 `json:"symbol"`
+	Name                string                 `json:"name"`
+	WebSlug             string                 `json:"web_slug"`
+	AssetPlatformID     string                 `json:"asset_platform_id"`
+	Platforms           map[string]string      `json:"platforms"`
+	DetailPlatforms     map[string]interface{} `json:"detail_platforms"`
+	BlockTimeInMinutes  int32                  `json:"block_time_in_minutes"`
+	HashingAlgorithm    string                 `json:"hashing_algorithm"`
+	Categories          []string               `json:"categories"`
+	Description         map[string]string      `json:"description"`
+	Links               map[string]interface{} `json:"links"`
+	Image               map[string]string      `json:"image"`
+	CountryOrigin       string                 `json:"country_origin"`
+	GenesisDate         string                 `json:"genesis_date"`
+	SentimentVotesUp    float64                `json:"sentiment_votes_up_percentage"`
+	SentimentVotesDown  float64                `json:"sentiment_votes_down_percentage"`
+	MarketCapRank       int32                  `json:"market_cap_rank"`
+	CoingeckoRank       int32                  `json:"coingecko_rank"`
+	CoingeckoScore      float64                `json:"coingecko_score"`
+	DeveloperScore      float64                `json:"developer_score"`
+	CommunityScore      float64                `json:"community_score"`
+	LiquidityScore      float64                `json:"liquidity_score"`
+	PublicInterestScore float64                `json:"public_interest_score"`
+	MarketData          *MarketData            `json:"market_data"`
+	CommunityData       *CommunityData         `json:"community_data"`
+	DeveloperData       *DeveloperData         `json:"developer_data"`
+	LastUpdated         string                 `json:"last_updated"`
 }
 
 type MarketData struct {
@@ -121,13 +121,13 @@ type CommunityData struct {
 }
 
 type DeveloperData struct {
-	Forks              int `json:"forks"`
-	Stars              int `json:"stars"`
-	Subscribers        int `json:"subscribers"`
-	TotalIssues        int `json:"total_issues"`
-	ClosedIssues       int `json:"closed_issues"`
-	PullRequestsMerged int `json:"pull_requests_merged"`
-	PullRequestContributors int `json:"pull_request_contributors"`
+	Forks                        int `json:"forks"`
+	Stars                        int `json:"stars"`
+	Subscribers                  int `json:"subscribers"`
+	TotalIssues                  int `json:"total_issues"`
+	ClosedIssues                 int `json:"closed_issues"`
+	PullRequestsMerged           int `json:"pull_requests_merged"`
+	PullRequestContributors      int `json:"pull_request_contributors"`
 	CodeAdditionsDeletions4Weeks struct {
 		Additions int `json:"additions"`
 		Deletions int `json:"deletions"`
@@ -143,7 +143,7 @@ func (c *Client) GetCoinData(ctx context.Context, params *CoinDataRequest) (*Coi
 
 	u, _ := url.Parse(fmt.Sprintf(BaseURL+EndpointCoinData, params.ID))
 	q := u.Query()
-	
+
 	q.Add(ParamLocalization, fmt.Sprintf("%t", params.Localization))
 	q.Add(ParamTickers, fmt.Sprintf("%t", params.Tickers))
 	q.Add(ParamMarketData, fmt.Sprintf("%t", params.MarketData))

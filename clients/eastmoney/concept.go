@@ -53,7 +53,7 @@ func (c *Client) GetConceptList(ctx context.Context, params *ConceptListParams) 
 	query.Set("fltt", "2")
 	query.Set("invt", "2")
 	query.Set("fid", "f3")
-	query.Set("fs", "m:90+t:2+f:!50") // Concept board
+	query.Set("fs", "m:90+t:2+f:!50")         // Concept board
 	query.Set("fields", "f12,f14,f3,f62,f20") // Code, Name, Change%, NetInflow, MarketCap
 
 	url := fmt.Sprintf("%s%s?%s", PushURL, ConceptListAPI, query.Encode())

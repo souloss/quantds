@@ -8,7 +8,6 @@ import (
 	"github.com/souloss/quantds/domain"
 	"github.com/souloss/quantds/domain/financial"
 	"github.com/souloss/quantds/manager"
-	"github.com/souloss/quantds/request"
 )
 
 // FinancialAdapter 将 Tushare 的利润表、资产负债表、现金流量表和财务指标
@@ -38,7 +37,7 @@ func (a *FinancialAdapter) CanHandle(symbol string) bool {
 	return false
 }
 
-func (a *FinancialAdapter) Fetch(ctx context.Context, _ request.Client, req financial.Request) (financial.Response, *manager.RequestTrace, error) {
+func (a *FinancialAdapter) Fetch(ctx context.Context, req financial.Request) (financial.Response, *manager.RequestTrace, error) {
 	trace := manager.NewRequestTrace(Name)
 
 	tsCode, err := tushare.ToTushareSymbol(req.Symbol)
@@ -50,10 +49,12 @@ func (a *FinancialAdapter) Fetch(ctx context.Context, _ request.Client, req fina
 	// 这里使用串行调用以保持简单性（Tushare 有频率限制）
 
 	// 1. 利润表
+	startDate := req.StartDate.Format("20060102")
+	endDate := req.EndDate.Format("20060102")
 	incomeRows, incRec, err := a.client.GetIncome(ctx, &tushare.IncomeParams{
 		TSCode:     tsCode,
-		StartDate:  req.StartDate,
-		EndDate:    req.EndDate,
+		StartDate:  startDate,
+		EndDate:    endDate,
 		ReportType: "1", // 合并报表
 	})
 	trace.AddRequest(incRec)
@@ -64,8 +65,8 @@ func (a *FinancialAdapter) Fetch(ctx context.Context, _ request.Client, req fina
 	// 2. 资产负债表
 	bsRows, bsRec, err := a.client.GetBalanceSheet(ctx, &tushare.BalanceSheetParams{
 		TSCode:     tsCode,
-		StartDate:  req.StartDate,
-		EndDate:    req.EndDate,
+		StartDate:  startDate,
+		EndDate:    endDate,
 		ReportType: "1",
 	})
 	trace.AddRequest(bsRec)
@@ -73,8 +74,8 @@ func (a *FinancialAdapter) Fetch(ctx context.Context, _ request.Client, req fina
 	// 3. 现金流量表
 	cfRows, cfRec, err := a.client.GetCashflow(ctx, &tushare.CashflowParams{
 		TSCode:     tsCode,
-		StartDate:  req.StartDate,
-		EndDate:    req.EndDate,
+		StartDate:  startDate,
+		EndDate:    endDate,
 		ReportType: "1",
 	})
 	trace.AddRequest(cfRec)
@@ -82,8 +83,8 @@ func (a *FinancialAdapter) Fetch(ctx context.Context, _ request.Client, req fina
 	// 4. 财务指标
 	fiRows, fiRec, err := a.client.GetFinaIndicator(ctx, &tushare.FinaIndicatorParams{
 		TSCode:    tsCode,
-		StartDate: req.StartDate,
-		EndDate:   req.EndDate,
+		StartDate: startDate,
+		EndDate:   endDate,
 	})
 	trace.AddRequest(fiRec)
 
@@ -163,10 +164,11 @@ func (a *FinancialAdapter) Fetch(ctx context.Context, _ request.Client, req fina
 
 	trace.Finish()
 	return financial.Response{
-		Symbol: req.Symbol,
-		Data:   data,
-		Source: Name,
-		Total:  len(data),
+		Symbol:      req.Symbol,
+		Data:        data,
+		Source:      Name,
+		DataVersion: 1,
+		Total:       len(data),
 	}, trace, nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -34,6 +35,7 @@ type Manager[Req, Resp any] struct {
 	providerInfo map[string]ProviderInfo
 	client       request.Client
 	cache        *TwoLevelCache
+	storage      Storage
 	metrics      Collector
 	selector     Selector
 }
@@ -61,6 +63,12 @@ func WithMetrics[Req, Resp any](collector Collector) ManagerOption[Req, Resp] {
 func WithSelector[Req, Resp any](selector Selector) ManagerOption[Req, Resp] {
 	return func(m *Manager[Req, Resp]) {
 		m.selector = selector
+	}
+}
+
+func WithStorage[Req, Resp any](s Storage) ManagerOption[Req, Resp] {
+	return func(m *Manager[Req, Resp]) {
+		m.storage = s
 	}
 }
 
@@ -133,7 +141,7 @@ func (m *Manager[Req, Resp]) Fetch(ctx context.Context, req Req) (*FetchResult[R
 		return nil, ErrNoProvider
 	}
 
-	var lastErr error
+	var allErrs []error
 	for _, name := range providerNames {
 		m.mu.RLock()
 		provider, ok := m.providers[name]
@@ -143,9 +151,9 @@ func (m *Manager[Req, Resp]) Fetch(ctx context.Context, req Req) (*FetchResult[R
 			continue
 		}
 
-		resp, trace, err := provider.Fetch(ctx, m.client, req)
+		resp, trace, err := provider.Fetch(ctx, req)
 		if err != nil {
-			lastErr = err
+			allErrs = append(allErrs, fmt.Errorf("%s: %w", name, err))
 			m.metrics.RecordFetch(Metric{
 				Provider:  name,
 				Duration:  time.Since(startTime),
@@ -178,7 +186,7 @@ func (m *Manager[Req, Resp]) Fetch(ctx context.Context, req Req) (*FetchResult[R
 		return result, nil
 	}
 
-	return nil, errors.Join(ErrAllProviderFailed, lastErr)
+	return nil, errors.Join(ErrAllProviderFailed, errors.Join(allErrs...))
 }
 
 func (m *Manager[Req, Resp]) FetchFrom(ctx context.Context, providerName string, req Req) (*FetchResult[Resp], error) {
@@ -191,7 +199,7 @@ func (m *Manager[Req, Resp]) FetchFrom(ctx context.Context, providerName string,
 	}
 
 	startTime := time.Now()
-	resp, trace, err := provider.Fetch(ctx, m.client, req)
+	resp, trace, err := provider.Fetch(ctx, req)
 	if err != nil {
 		m.metrics.RecordFetch(Metric{
 			Provider:  providerName,
@@ -239,12 +247,80 @@ func (m *Manager[Req, Resp]) Providers() []string {
 	return names
 }
 
+// ProviderEntry holds a provider name and its underlying Provider interface.
+type ProviderEntry[Req, Resp any] struct {
+	Name     string
+	Provider Provider[Req, Resp]
+}
+
+// ProviderEntries returns all registered providers with their interfaces.
+// This allows callers to inspect provider state (e.g., circuit breaker status).
+func (m *Manager[Req, Resp]) ProviderEntries() []ProviderEntry[Req, Resp] {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	entries := make([]ProviderEntry[Req, Resp], 0, len(m.providers))
+	for name, p := range m.providers {
+		entries = append(entries, ProviderEntry[Req, Resp]{Name: name, Provider: p})
+	}
+	return entries
+}
+
 func (m *Manager[Req, Resp]) Stats() Stats {
 	return m.metrics.GetStats()
 }
 
+// CacheStats returns the cache hit/miss statistics if caching is enabled.
+// Returns nil if no cache is configured.
+func (m *Manager[Req, Resp]) CacheStats() *TwoLevelCacheStats {
+	if m.cache == nil {
+		return nil
+	}
+	stats := m.cache.Stats()
+	return &stats
+}
+
 func (m *Manager[Req, Resp]) Close() {
+	if m.cache != nil {
+		m.cache.Close()
+	}
 	if m.client != nil {
 		m.client.Close()
 	}
+	if m.storage != nil {
+		m.storage.Close()
+	}
+}
+
+// HealthCheckResult holds the result of a health check for a single provider.
+type HealthCheckResult struct {
+	Provider string
+	Healthy  bool
+	Error    error
+}
+
+// HealthCheck checks the health of all providers that implement HealthCheckable.
+// Providers that do not implement HealthCheckable are skipped.
+func (m *Manager[Req, Resp]) HealthCheck(ctx context.Context) []HealthCheckResult {
+	m.mu.RLock()
+	providers := make(map[string]Provider[Req, Resp], len(m.providers))
+	for name, p := range m.providers {
+		providers[name] = p
+	}
+	m.mu.RUnlock()
+
+	var results []HealthCheckResult
+	for name, p := range providers {
+		hc, ok := p.(HealthCheckable)
+		if !ok {
+			continue
+		}
+		err := hc.HealthCheck(ctx)
+		results = append(results, HealthCheckResult{
+			Provider: name,
+			Healthy:  err == nil,
+			Error:    err,
+		})
+	}
+	return results
 }

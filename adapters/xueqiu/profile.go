@@ -7,7 +7,6 @@ import (
 	"github.com/souloss/quantds/domain"
 	"github.com/souloss/quantds/domain/profile"
 	"github.com/souloss/quantds/manager"
-	"github.com/souloss/quantds/request"
 )
 
 // ProfileAdapter adapts Xueqiu quote detail data to domain profile
@@ -45,7 +44,7 @@ func (a *ProfileAdapter) CanHandle(symbol string) bool {
 }
 
 // Fetch retrieves profile data from Xueqiu
-func (a *ProfileAdapter) Fetch(ctx context.Context, _ request.Client, req profile.Request) (profile.Response, *manager.RequestTrace, error) {
+func (a *ProfileAdapter) Fetch(ctx context.Context, req profile.Request) (profile.Response, *manager.RequestTrace, error) {
 	trace := manager.NewRequestTrace(Name)
 
 	params := &xueqiu.QuoteDetailParams{
@@ -103,7 +102,8 @@ func (a *ProfileAdapter) Fetch(ctx context.Context, _ request.Client, req profil
 			MarketCap:   result.TotalMarketCap,
 			FloatCap:    result.FloatMarketCap,
 		},
-		Source: Name,
+		Source:      Name,
+		DataVersion: 1,
 	}, trace, nil
 }
 

@@ -5,11 +5,32 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"math/rand"
+	"sync"
 	"time"
 
 	"github.com/failsafe-go/failsafe-go"
 	"resty.dev/v3"
 )
+
+// userAgentPool contains common browser User-Agent strings for anti-crawler rotation.
+var userAgentPool = []string{
+	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+	"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+	"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0",
+	"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15",
+	"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.0",
+	"Mozilla/5.0 (X11; Linux x86_64; rv:126.0) Gecko/20100101 Firefox/126.0",
+	"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 OPR/110.0.0.0",
+	"Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
+}
+
+// RandomUserAgent returns a random User-Agent string from the pool.
+func RandomUserAgent() string {
+	return userAgentPool[rand.Intn(len(userAgentPool))]
+}
 
 type Client interface {
 	Do(ctx context.Context, req Request) (Response, *Record, error)
@@ -121,6 +142,11 @@ func (c *ClientImpl) doHTTP(ctx context.Context, req Request) (Response, error) 
 		r.SetHeader(k, v)
 	}
 
+	// Auto-set random User-Agent if not already provided
+	if _, ok := req.Headers["User-Agent"]; !ok {
+		r.SetHeader("User-Agent", RandomUserAgent())
+	}
+
 	if len(req.Body) > 0 {
 		r.SetBody(req.Body)
 	}
@@ -195,6 +221,7 @@ func BuildCacheKey(req Request) string {
 
 type CachingClient struct {
 	client Client
+	mu     sync.RWMutex
 	cache  map[string]cachedResponse
 	ttl    time.Duration
 }
@@ -215,7 +242,12 @@ func NewCachingClient(client Client, ttl time.Duration) *CachingClient {
 func (c *CachingClient) Do(ctx context.Context, req Request) (Response, *Record, error) {
 	if req.Method == "GET" && c.ttl > 0 {
 		key := BuildCacheKey(req)
-		if cached, ok := c.cache[key]; ok && time.Now().Before(cached.expiresAt) {
+
+		c.mu.RLock()
+		cached, ok := c.cache[key]
+		c.mu.RUnlock()
+
+		if ok && time.Now().Before(cached.expiresAt) {
 			var resp Response
 			if err := json.Unmarshal(cached.data, &resp); err == nil {
 				record := NewRecord()
@@ -229,10 +261,12 @@ func (c *CachingClient) Do(ctx context.Context, req Request) (Response, *Record,
 		resp, record, err := c.client.Do(ctx, req)
 		if err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300 {
 			if data, merr := json.Marshal(resp); merr == nil {
+				c.mu.Lock()
 				c.cache[key] = cachedResponse{
 					data:      data,
 					expiresAt: time.Now().Add(c.ttl),
 				}
+				c.mu.Unlock()
 			}
 		}
 		return resp, record, err
@@ -246,5 +280,7 @@ func (c *CachingClient) Close() {
 }
 
 func (c *CachingClient) ClearCache() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	c.cache = make(map[string]cachedResponse)
 }

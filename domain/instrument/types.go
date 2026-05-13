@@ -6,8 +6,6 @@
 package instrument
 
 import (
-	"context"
-
 	"github.com/souloss/quantds/domain"
 )
 
@@ -67,11 +65,12 @@ func (r Request) CacheKey() string {
 
 // Response represents a securities list response.
 type Response struct {
-	Data       []Instrument // 证券列表
-	Total      int          // 总数
-	Source     string       // 数据源名称
-	PageNumber int          // 当前页码
-	PageSize   int          // 分页大小
+	Data        []Instrument // 证券列表
+	Total       int          // 总数
+	Source      string       // 数据源名称
+	PageNumber  int          // 当前页码
+	PageSize    int          // 分页大小
+	DataVersion int          // 数据格式版本（当前为1）
 }
 
 // Instrument represents a single financial instrument/security.
@@ -89,13 +88,6 @@ type Instrument struct {
 	Status     Status    // 交易状态
 	AssetType  AssetType // 资产类型
 	Currency   string    // 币种 (CNY, USD, etc.)
-}
-
-// Source defines the interface for instrument list providers.
-type Source interface {
-	Name() string
-	Fetch(ctx context.Context, req Request) (Response, error)
-	HealthCheck(ctx context.Context) error
 }
 
 // FormatSymbol formats code and exchange into a symbol string.

@@ -13,26 +13,26 @@ import (
 // API Endpoint Constants
 const (
 	EndpointSimplePrice = "/simple/price"
-	
+
 	// Query Parameters
-	ParamIDs                 = "ids"
-	ParamVsCurrencies        = "vs_currencies"
-	ParamIncludeMarketCap    = "include_market_cap"
-	ParamInclude24hrVol      = "include_24hr_vol"
-	ParamInclude24hrChange   = "include_24hr_change"
+	ParamIDs                  = "ids"
+	ParamVsCurrencies         = "vs_currencies"
+	ParamIncludeMarketCap     = "include_market_cap"
+	ParamInclude24hrVol       = "include_24hr_vol"
+	ParamInclude24hrChange    = "include_24hr_change"
 	ParamIncludeLastUpdatedAt = "include_last_updated_at"
-	
+
 	// Default Values
 	ValueTrue = "true"
 )
 
 // SimplePriceRequest represents parameters for simple price request
 type SimplePriceRequest struct {
-	IDs                 []string // Coin IDs (e.g. "bitcoin", "ethereum")
-	VsCurrencies        []string // Target currencies (e.g. "usd", "cny")
-	IncludeMarketCap    bool
-	Include24hrVol      bool
-	Include24hrChange   bool
+	IDs                  []string // Coin IDs (e.g. "bitcoin", "ethereum")
+	VsCurrencies         []string // Target currencies (e.g. "usd", "cny")
+	IncludeMarketCap     bool
+	Include24hrVol       bool
+	Include24hrChange    bool
 	IncludeLastUpdatedAt bool
 }
 
@@ -50,7 +50,7 @@ func (c *Client) GetSimplePrice(ctx context.Context, params *SimplePriceRequest)
 	q := u.Query()
 	q.Add(ParamIDs, strings.Join(params.IDs, ","))
 	q.Add(ParamVsCurrencies, strings.Join(params.VsCurrencies, ","))
-	
+
 	if params.IncludeMarketCap {
 		q.Add(ParamIncludeMarketCap, ValueTrue)
 	}

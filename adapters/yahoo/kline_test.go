@@ -50,9 +50,9 @@ func TestKlineAdapter_CanHandle(t *testing.T) {
 		{"AAPL.US", true},
 		{"MSFT.US.NASDAQ", true},
 		{"JPM.US.NYSE", true},
-		{"000001.SZ", false}, // A-share
+		{"000001.SZ", false},     // A-share
 		{"00700.HK.HKEX", false}, // HK stock
-		{"BTCUSDT", false},   // Crypto
+		{"BTCUSDT", false},       // Crypto
 		{"invalid", false},
 	}
 

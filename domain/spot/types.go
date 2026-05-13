@@ -5,7 +5,6 @@
 package spot
 
 import (
-	"context"
 	"time"
 
 	"github.com/souloss/quantds/domain"
@@ -35,9 +34,10 @@ func (r Request) CacheKey() string {
 
 // Response represents a real-time quote response.
 type Response struct {
-	Quotes []Quote // 行情列表
-	Total  int     // 总数
-	Source string  // 数据源名称
+	Quotes      []Quote // 行情列表
+	Total       int     // 总数
+	Source      string  // 数据源名称
+	DataVersion int     // 数据格式版本（当前为1）
 }
 
 // Quote represents a single real-time market quote.
@@ -62,13 +62,6 @@ type Quote struct {
 	AskVolume    float64   // 卖一量
 }
 
-// Source defines the interface for spot data providers.
-type Source interface {
-	Name() string
-	Fetch(ctx context.Context, req Request) (Response, error)
-	HealthCheck(ctx context.Context) error
-}
-
 // ParseSymbol parses a symbol string into code and exchange.
 func ParseSymbol(symbol string) (code string, exchange Exchange, ok bool) {
 	return domain.ParseSymbol(symbol)
@@ -77,4 +70,31 @@ func ParseSymbol(symbol string) (code string, exchange Exchange, ok bool) {
 // FormatSymbol formats code and exchange into a symbol string.
 func FormatSymbol(code string, exchange Exchange) string {
 	return domain.FormatSymbol(code, exchange)
+}
+
+// Normalize fills in computed fields for the Quote that are zero-valued.
+// It computes Change, ChangeRate from Latest/PreClose, and Amplitude from High/Low/PreClose.
+func (q *Quote) Normalize() {
+	if q.Change == 0 && q.PreClose != 0 {
+		q.Change = q.Latest - q.PreClose
+	}
+	if q.ChangeRate == 0 && q.PreClose != 0 {
+		q.ChangeRate = (q.Latest - q.PreClose) / q.PreClose * 100
+	}
+	if q.Amplitude == 0 && q.PreClose != 0 {
+		q.Amplitude = (q.High - q.Low) / q.PreClose * 100
+	}
+	if q.Turnover == 0 && q.Latest != 0 && q.Volume != 0 {
+		q.Turnover = q.Latest * q.Volume
+	}
+}
+
+// Normalize fills in computed fields for all Quotes in the response.
+func (r *Response) Normalize() {
+	for i := range r.Quotes {
+		r.Quotes[i].Normalize()
+	}
+	if r.DataVersion == 0 {
+		r.DataVersion = 1
+	}
 }

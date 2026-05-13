@@ -33,8 +33,8 @@ type Request struct {
 	Symbol     string       // Symbol code
 	ReportType ReportType   // Type of report
 	Period     ReportPeriod // Reporting period
-	StartDate  string       // Start date (YYYY-MM-DD)
-	EndDate    string       // End date (YYYY-MM-DD)
+	StartDate  time.Time    // Start date
+	EndDate    time.Time    // End date
 	PageSize   int          // Page size
 	PageNumber int          // Page number
 }
@@ -46,12 +46,13 @@ func (r Request) CacheKey() string {
 
 // Response represents a financial data response
 type Response struct {
-	Symbol     string          // Symbol code
-	Data       []FinancialData // Financial data list
-	Source     string          // Data source name
-	Total      int             // Total records
-	PageNumber int             // Current page
-	PageSize   int             // Page size
+	Symbol      string          // Symbol code
+	Data        []FinancialData // Financial data list
+	Source      string          // Data source name
+	Total       int             // Total records
+	PageNumber  int             // Current page
+	PageSize    int             // Page size
+	DataVersion int             // 数据格式版本（当前为1）
 }
 
 // FinancialData represents a single financial report record

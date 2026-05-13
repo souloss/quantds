@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	BaseURL     = "https://eodhd.com/api"
-	EODAPI      = "/eod"
-	RealTimeAPI = "/real-time"
-	ExchangeSymbolsAPI = "/exchange-symbol-list"
+	BaseURL             = "https://eodhd.com/api"
+	EODAPI              = "/eod"
+	RealTimeAPI         = "/real-time"
+	ExchangeSymbolsAPI  = "/exchange-symbol-list"
 	BondFundamentalsAPI = "/bond-fundamentals"
 )
 

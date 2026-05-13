@@ -229,13 +229,14 @@ func (s *Symbol) Parse(input string) error {
 }
 
 // SmartParse 智能识别无后缀代码
+// 分支优先级：A股 → 港股 → 含分隔符的Crypto → Crypto(quote suffix) → 外汇 → 美股（最后，最模糊）
 func (s *Symbol) SmartParse(code string) error {
 	s.Code = strings.ToUpper(code)
 
 	// A股：6位纯数字
 	if isPureDigits(code) && len(code) == 6 {
 		s.Market = MarketCN
-		s.Exchange = inferCNExchange(code) // 根据代码规则推断
+		s.Exchange = inferCNExchange(code)
 		s.AssetType = AssetTypeStock
 		s.Standard = fmt.Sprintf("%s.%s.%s", s.Code, s.Market, s.Exchange)
 		return nil
@@ -250,31 +251,72 @@ func (s *Symbol) SmartParse(code string) error {
 		return nil
 	}
 
-	// 美股：1-5位字母
-	if len(code) >= 1 && len(code) <= 5 && isAllLetters(code) {
-		s.Market = MarketUS
-		s.Exchange = ExchangeNASDAQ // 默认，可后续修正
-		s.AssetType = AssetTypeStock
+	// 加密货币：含分隔符格式（BTC-USD, BTC/USDT, BTC_USDT, BTC/USDT:USDT）
+	if strings.Contains(code, "-") || strings.Contains(code, "/") || strings.Contains(code, "_") {
+		cryptoCode, base, quote := normalizeCryptoCodeWithSplit(code)
+		if base != "" && quote != "" {
+			s.Code = cryptoCode
+			s.Market = MarketCrypto
+			s.Exchange = ExchangeBinance
+			s.AssetType = AssetTypeCrypto
+			s.Standard = fmt.Sprintf("%s.%s.%s", s.Code, s.Market, s.Exchange)
+			return nil
+		}
+	}
+
+	// 加密货币：quote suffix 匹配（BTCUSDT, ETHUSDC, SOLUSDT 等）
+	// 已知 quote 后缀是有限且稳定的，base 货币是无限增长的
+	// 对于6位纯字母代码，需要区分 forex pair 和 crypto pair：
+	// - forex pair 的 base 和 quote 都是3字母 ISO 4217 代码（EURUSD, GBPJPY）
+	// - crypto pair 的 quote 后缀长度 ≥ 3（USDT=4, BTC=3, ETH=3）
+	// 规则：如果6位纯字母代码能拆成3+3且两部分都是已知货币代码 → forex
+	// 否则尝试 crypto quote suffix 匹配
+	if len(code) == 6 && isAllLetters(code) {
+		// 检查是否是 forex pair（3+3 拆分，两部分都是3字母货币代码）
+		base3 := code[:3]
+		quote3 := code[3:]
+		if isKnownForexCurrency(base3) && isKnownForexCurrency(quote3) {
+			s.Market = MarketForex
+			s.Exchange = ExchangeForexSpot
+			s.AssetType = AssetTypeForex
+			s.Standard = fmt.Sprintf("%s.%s.%s", s.Code, s.Market, s.Exchange)
+			return nil
+		}
+		// 不是 forex pair，尝试 crypto quote suffix
+		if base, quote, ok := MatchCryptoQuoteSuffix(code); ok {
+			s.Code = base + quote
+			s.Market = MarketCrypto
+			s.Exchange = ExchangeBinance
+			s.AssetType = AssetTypeCrypto
+			s.Standard = fmt.Sprintf("%s.%s.%s", s.Code, s.Market, s.Exchange)
+			return nil
+		}
+		// 6位纯字母但既不是 forex 也不是 crypto → 仍归为 forex
+		s.Market = MarketForex
+		s.Exchange = ExchangeForexSpot
+		s.AssetType = AssetTypeForex
 		s.Standard = fmt.Sprintf("%s.%s.%s", s.Code, s.Market, s.Exchange)
 		return nil
 	}
 
-	// 加密货币：常见格式（BTCUSDT, BTC-USD）
-	cryptoCode := normalizeCryptoCode(code)
-	if isCryptoFormat(cryptoCode) {
-		s.Code = cryptoCode
+	// 加密货币：非6位纯字母的 quote suffix 匹配
+	if base, quote, ok := MatchCryptoQuoteSuffix(code); ok {
+		s.Code = base + quote
 		s.Market = MarketCrypto
-		s.Exchange = ExchangeBinance // 默认
+		s.Exchange = ExchangeBinance
 		s.AssetType = AssetTypeCrypto
 		s.Standard = fmt.Sprintf("%s.%s.%s", s.Code, s.Market, s.Exchange)
 		return nil
 	}
 
-	// 外汇：6位字母（EURUSD）
-	if len(code) == 6 && isAllLetters(code) {
-		s.Market = MarketForex
-		s.Exchange = ExchangeForexSpot
-		s.AssetType = AssetTypeForex
+	// 美股：1-5位纯字母（最后，最模糊的分支）
+	// 注意：短字母代码如 "SOL" 既可能是美股也可能是 crypto
+	// 规则：不以已知 quote suffix 结尾的纯字母代码默认为美股
+	// 用户可通过 .CRYPTO 后缀强制指定为 crypto
+	if len(code) >= 1 && len(code) <= 5 && isAllLetters(code) {
+		s.Market = MarketUS
+		s.Exchange = ExchangeNASDAQ
+		s.AssetType = AssetTypeStock
 		s.Standard = fmt.Sprintf("%s.%s.%s", s.Code, s.Market, s.Exchange)
 		return nil
 	}
@@ -355,17 +397,24 @@ func deriveMarketFromExchange(ex Exchange) Market {
 }
 
 func inferCNExchange(code string) Exchange {
-	// 上交所：60, 68, 90, 89 开头
-	// 深交所：00, 30, 20 开头
-	// 北交所：43, 83, 87 开头
+	// 2位前缀判断（ETF/基金/指数的2位前缀优先于普通股票的2位前缀）
 	if len(code) >= 2 {
 		prefix := code[:2]
 		switch {
-		case prefix == "60" || prefix == "68" || prefix == "90":
+		// 上交所ETF/基金/指数：51x, 52x, 56x, 58x
+		case prefix == "51" || prefix == "52" || prefix == "56" || prefix == "58":
 			return ExchangeSH
+		// 深交所ETF/基金：15x, 16x, 18x
+		case prefix == "15" || prefix == "16" || prefix == "18":
+			return ExchangeSZ
+		// 上交所：60(主板), 68(科创板), 90(指数), 89(指数)
+		case prefix == "60" || prefix == "68" || prefix == "90" || prefix == "89":
+			return ExchangeSH
+		// 深交所：00(主板), 30(创业板), 20(科创板)
 		case prefix == "00" || prefix == "30" || prefix == "20":
 			return ExchangeSZ
-		case prefix == "43" || prefix == "83" || prefix == "87":
+		// 北交所：43, 83, 87, 92(新三板转板)
+		case prefix == "43" || prefix == "83" || prefix == "87" || prefix == "92":
 			return ExchangeBJ
 		}
 	}
@@ -398,28 +447,103 @@ func isDigit(c byte) bool {
 	return c >= '0' && c <= '9'
 }
 
-func normalizeCryptoCode(code string) string {
-	// 统一格式：去除分隔符，大写
-	code = strings.ToUpper(code)
-	code = strings.ReplaceAll(code, "-", "")
-	code = strings.ReplaceAll(code, "/", "")
-	code = strings.ReplaceAll(code, "_", "")
-	return code
+// knownCryptoQuotes 已知的加密货币 quote 后缀列表。
+// 这些后缀是有限且稳定的，而 base 货币是无限增长的。
+// 因此通过匹配 quote 后缀来识别 crypto pair，而非枚举 base 货币。
+var knownCryptoQuotes = []string{
+	"USDT", "USDC", "USD", // 稳定币/法币
+	"BTC", "ETH", "BNB", // 主流币
+	"FDUSD", "BUSD", // 其他稳定币
+	"TUSD", "DAI", // DeFi 稳定币
 }
 
-func isCryptoFormat(code string) bool {
-	// 简单启发式：包含常见后缀
-	commonBases := []string{"BTC", "ETH", "USDT", "USDC", "USD", "BUSD"}
-	commonQuotes := []string{"USDT", "USDC", "USD", "BUSD", "BTC", "ETH"}
-
-	for _, base := range commonBases {
-		for _, quote := range commonQuotes {
-			if code == base+quote || code == quote+base {
-				return true
+// MatchCryptoQuoteSuffix checks if a string ends with a known crypto quote suffix.
+// Returns (base, quote, matched). For example "BTCUSDT" → ("BTC", "USDT", true).
+func MatchCryptoQuoteSuffix(code string) (base string, quote string, ok bool) {
+	upper := strings.ToUpper(code)
+	for _, q := range knownCryptoQuotes {
+		if strings.HasSuffix(upper, q) {
+			b := upper[:len(upper)-len(q)]
+			// base 部分至少2个字符且全部为字母
+			if len(b) >= 2 && isAllLetters(b) {
+				return b, q, true
 			}
 		}
 	}
-	return false
+	return "", "", false
+}
+
+// normalizeCryptoCodeWithSplit 处理含分隔符的加密货币代码（BTC-USD, BTC/USDT, BTC_USDT, BTC/USDT:USDT）。
+// 返回 (标准化代码, base, quote)。
+// CCXT 格式的结算货币后缀（如 :USDT）会被自动剥离。
+func normalizeCryptoCodeWithSplit(code string) (normalized string, base string, quote string) {
+	upper := strings.ToUpper(code)
+
+	// Strip CCXT settlement currency suffix (e.g., "BTC/USDT:USDT" -> "BTC/USDT")
+	if idx := strings.Index(upper, ":"); idx >= 0 {
+		upper = upper[:idx]
+	}
+
+	var parts []string
+	switch {
+	case strings.Contains(upper, "/"):
+		parts = strings.SplitN(upper, "/", 2)
+	case strings.Contains(upper, "-"):
+		parts = strings.SplitN(upper, "-", 2)
+	case strings.Contains(upper, "_"):
+		parts = strings.SplitN(upper, "_", 2)
+	default:
+		return upper, "", ""
+	}
+
+	if len(parts) == 2 && len(parts[0]) >= 2 && len(parts[1]) >= 3 {
+		return parts[0] + parts[1], parts[0], parts[1]
+	}
+	return upper, "", ""
+}
+
+// NormalizeCryptoSymbol converts any common crypto symbol format to the canonical
+// concatenated form (e.g., "BTCUSDT").
+//
+// Supported input formats:
+//   - Slash: "BTC/USDT" → "BTCUSDT"
+//   - Dash: "BTC-USDT" → "BTCUSDT"
+//   - Underscore: "BTC_USDT" → "BTCUSDT"
+//   - CCXT with settlement: "BTC/USDT:USDT" → "BTCUSDT"
+//   - Already concatenated: "BTCUSDT" → "BTCUSDT"
+//   - Lowercase: "btcusdt" → "BTCUSDT"
+func NormalizeCryptoSymbol(raw string) string {
+	upper := strings.ToUpper(strings.TrimSpace(raw))
+	// If it contains a separator, use the split logic
+	if strings.Contains(upper, "/") || strings.Contains(upper, "-") || strings.Contains(upper, "_") || strings.Contains(upper, ":") {
+		code, _, _ := normalizeCryptoCodeWithSplit(upper)
+		return code
+	}
+	return upper
+}
+
+// knownForexCurrencies 已知的 ISO 4217 货币代码列表。
+// 用于区分6位纯字母代码是 forex pair 还是 crypto pair。
+var knownForexCurrencies = map[string]bool{
+	// 主要货币
+	"USD": true, "EUR": true, "GBP": true, "JPY": true,
+	"CHF": true, "CAD": true, "AUD": true, "NZD": true,
+	// 亚洲货币
+	"CNY": true, "HKD": true, "SGD": true, "KRW": true,
+	"TWD": true, "THB": true, "INR": true, "MYR": true,
+	"PHP": true, "IDR": true, "VND": true,
+	// 欧洲货币
+	"SEK": true, "NOK": true, "DKK": true, "PLN": true,
+	"CZK": true, "HUF": true, "RUB": true, "TRY": true,
+	// 其他
+	"MXN": true, "BRL": true, "ZAR": true, "ILS": true,
+	"ARS": true, "CLP": true, "COP": true, "PEN": true,
+	"SAR": true, "AED": true, "EGP": true,
+}
+
+// isKnownForexCurrency 检查3字母代码是否是已知 ISO 4217 货币代码。
+func isKnownForexCurrency(code string) bool {
+	return knownForexCurrencies[code]
 }
 
 // ========== 便捷解析函数（兼容旧接口）==========

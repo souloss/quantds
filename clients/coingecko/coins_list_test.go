@@ -22,7 +22,7 @@ func TestClient_GetCoinsList(t *testing.T) {
 	}
 
 	t.Logf("Coins count: %d", len(result))
-	
+
 	if len(result) == 0 {
 		t.Fatal("Expected coins list, got 0")
 	}

@@ -9,7 +9,6 @@ import (
 	"github.com/souloss/quantds/domain"
 	"github.com/souloss/quantds/domain/financial"
 	"github.com/souloss/quantds/manager"
-	"github.com/souloss/quantds/request"
 )
 
 // FinancialAdapter adapts Eastmoney financial data
@@ -47,7 +46,7 @@ func (a *FinancialAdapter) CanHandle(symbol string) bool {
 }
 
 // Fetch retrieves financial data
-func (a *FinancialAdapter) Fetch(ctx context.Context, _ request.Client, req financial.Request) (financial.Response, *manager.RequestTrace, error) {
+func (a *FinancialAdapter) Fetch(ctx context.Context, req financial.Request) (financial.Response, *manager.RequestTrace, error) {
 	trace := manager.NewRequestTrace(Name)
 
 	// 1. Income Statement
@@ -134,8 +133,8 @@ func (a *FinancialAdapter) Fetch(ctx context.Context, _ request.Client, req fina
 			item.TotalLiabilities = getFloat(bsRow, "TOTAL_LIABILITIES")
 			item.CurrentLiabilities = getFloat(bsRow, "TOTAL_CURRENT_LIABILITIES")
 			item.NonCurrentLiabilities = getFloat(bsRow, "TOTAL_NONCURRENT_LIABILITIES")
-			item.TotalOwnerEquity = getFloat(bsRow, "TOTAL_EQUITY") // 归母权益? Need check field mapping. usually TOTAL_PARENT_EQUITY or TOTAL_EQUITY
-			item.TotalEquity = getFloat(bsRow, "TOTAL_SHARE") // Share capital
+			item.TotalOwnerEquity = getFloat(bsRow, "TOTAL_PARENT_EQUITY") // 归母权益 (TOTAL_PARENT_EQUITY, not TOTAL_EQUITY)
+			item.TotalEquity = getFloat(bsRow, "TOTAL_SHARE")              // 总股本 (TOTAL_SHARE is share capital, not equity)
 			item.CapitalReserve = getFloat(bsRow, "CAPITAL_RESERVE")
 			item.SurplusReserve = getFloat(bsRow, "SURPLUS_RESERVE")
 			item.UndistributedProfit = getFloat(bsRow, "UNDISTRIBUTED_PROFIT")
@@ -153,9 +152,10 @@ func (a *FinancialAdapter) Fetch(ctx context.Context, _ request.Client, req fina
 
 	trace.Finish()
 	return financial.Response{
-		Symbol: req.Symbol,
-		Data:   data,
-		Source: Name,
+		Symbol:      req.Symbol,
+		Data:        data,
+		Source:      Name,
+		DataVersion: 1,
 	}, trace, nil
 }
 

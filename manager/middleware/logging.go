@@ -2,23 +2,30 @@ package middleware
 
 import (
 	"context"
-	"log"
+	"log/slog"
+	"time"
 
 	"github.com/souloss/quantds/manager"
-	"github.com/souloss/quantds/request"
 )
 
-func Logging[Req, Resp any](logger *log.Logger) Middleware[Req, Resp] {
+func Logging[Req, Resp any](logger *slog.Logger) Middleware[Req, Resp] {
 	return func(next manager.Provider[Req, Resp]) manager.Provider[Req, Resp] {
-		return ProviderFunc[Req, Resp](next.Name(), func(ctx context.Context, client request.Client, req Req) (Resp, *manager.RequestTrace, error) {
-			resp, trace, err := next.Fetch(ctx, client, req)
-			if logger != nil {
-				if err != nil {
-					logger.Printf("[Fetch] provider=%s error=%v", next.Name(), err)
-				} else {
-					logger.Printf("[Fetch] provider=%s requests=%d duration=%v", next.Name(), trace.TotalRequests(), trace.TotalDuration())
-				}
+		return ProviderFunc[Req, Resp](next.Name(), func(ctx context.Context, req Req) (Resp, *manager.RequestTrace, error) {
+			start := time.Now()
+			resp, trace, err := next.Fetch(ctx, req)
+			duration := time.Since(start)
+
+			attrs := []any{
+				"provider", next.Name(),
+				"duration", duration,
 			}
+			if err != nil {
+				attrs = append(attrs, "error", err)
+				logger.Error("provider fetch failed", attrs...)
+			} else {
+				logger.Info("provider fetch succeeded", attrs...)
+			}
+
 			return resp, trace, err
 		})
 	}

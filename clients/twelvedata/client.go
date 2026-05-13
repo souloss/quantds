@@ -9,16 +9,16 @@ import (
 )
 
 const (
-	BaseURL        = "https://api.twelvedata.com"
-	TimeSeriesAPI  = "/time_series"
-	QuoteAPI       = "/quote"
-	PriceAPI       = "/price"
-	StocksAPI      = "/stocks"
-	ForexPairsAPI  = "/forex_pairs"
-	CryptoAPI      = "/cryptocurrencies"
-	ETFAPI         = "/etf"
-	FundsAPI       = "/funds"
-	BondsAPI       = "/bonds"
+	BaseURL       = "https://api.twelvedata.com"
+	TimeSeriesAPI = "/time_series"
+	QuoteAPI      = "/quote"
+	PriceAPI      = "/price"
+	StocksAPI     = "/stocks"
+	ForexPairsAPI = "/forex_pairs"
+	CryptoAPI     = "/cryptocurrencies"
+	ETFAPI        = "/etf"
+	FundsAPI      = "/funds"
+	BondsAPI      = "/bonds"
 )
 
 var DefaultHeaders = map[string]string{
@@ -27,13 +27,13 @@ var DefaultHeaders = map[string]string{
 }
 
 const (
-	Interval1min  = "1min"
-	Interval5min  = "5min"
-	Interval15min = "15min"
-	Interval30min = "30min"
-	Interval1h    = "1h"
-	Interval1day  = "1day"
-	Interval1week = "1week"
+	Interval1min   = "1min"
+	Interval5min   = "5min"
+	Interval15min  = "15min"
+	Interval30min  = "30min"
+	Interval1h     = "1h"
+	Interval1day   = "1day"
+	Interval1week  = "1week"
 	Interval1month = "1month"
 )
 

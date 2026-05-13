@@ -2,11 +2,11 @@ package manager
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/souloss/quantds/domain"
-	"github.com/souloss/quantds/request"
 )
 
 type testReq struct {
@@ -35,7 +35,7 @@ func (p *testProvider) CanHandle(symbol string) bool {
 	return true
 }
 
-func (p *testProvider) Fetch(ctx context.Context, client request.Client, req testReq) (testResp, *RequestTrace, error) {
+func (p *testProvider) Fetch(ctx context.Context, req testReq) (testResp, *RequestTrace, error) {
 	return testResp{Data: p.data}, NewRequestTrace(p.name), p.err
 }
 
@@ -247,5 +247,71 @@ func TestMemoryCollector(t *testing.T) {
 	stats = collector.GetStats()
 	if stats.TotalFetches != 0 {
 		t.Errorf("After Reset(), TotalFetches = %v, want 0", stats.TotalFetches)
+	}
+}
+
+// testProviderWithHealthCheck implements both Provider and HealthCheckable.
+type testProviderWithHealthCheck struct {
+	testProvider
+	healthErr error
+}
+
+func (p *testProviderWithHealthCheck) HealthCheck(ctx context.Context) error {
+	return p.healthErr
+}
+
+func TestManager_HealthCheck(t *testing.T) {
+	m := NewManager[testReq, testResp](
+		WithProvider[testReq, testResp](&testProviderWithHealthCheck{
+			testProvider: testProvider{name: "healthy", data: "ok"},
+			healthErr:    nil,
+		}),
+		WithProvider[testReq, testResp](&testProviderWithHealthCheck{
+			testProvider: testProvider{name: "unhealthy", data: "ok"},
+			healthErr:    errors.New("connection refused"),
+		}),
+		WithProvider[testReq, testResp](&testProvider{name: "nohealth", data: "ok"}),
+	)
+	defer m.Close()
+
+	results := m.HealthCheck(context.Background())
+
+	// Only providers implementing HealthCheckable should appear
+	if len(results) != 2 {
+		t.Fatalf("HealthCheck() returned %d results, want 2", len(results))
+	}
+
+	// Build a map for easier checking
+	resultMap := make(map[string]HealthCheckResult)
+	for _, r := range results {
+		resultMap[r.Provider] = r
+	}
+
+	if r, ok := resultMap["healthy"]; !ok {
+		t.Error("missing 'healthy' provider in results")
+	} else if !r.Healthy {
+		t.Errorf("healthy provider should be healthy, got error: %v", r.Error)
+	}
+
+	if r, ok := resultMap["unhealthy"]; !ok {
+		t.Error("missing 'unhealthy' provider in results")
+	} else if r.Healthy {
+		t.Error("unhealthy provider should not be healthy")
+	}
+
+	if _, ok := resultMap["nohealth"]; ok {
+		t.Error("provider without HealthCheckable should not appear in results")
+	}
+}
+
+func TestManager_HealthCheck_NoHealthCheckableProviders(t *testing.T) {
+	m := NewManager[testReq, testResp](
+		WithProvider[testReq, testResp](&testProvider{name: "p1", data: "ok"}),
+	)
+	defer m.Close()
+
+	results := m.HealthCheck(context.Background())
+	if len(results) != 0 {
+		t.Errorf("HealthCheck() returned %d results, want 0", len(results))
 	}
 }

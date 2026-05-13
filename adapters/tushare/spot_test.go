@@ -15,7 +15,7 @@ func TestSpotAdapter_Fetch(t *testing.T) {
 	// But unit tests should ideally mock the client response.
 	// Given the complexity of mocking http client here without a mock framework,
 	// we will rely on integration testing style if token exists, or just basic structure check.
-	
+
 	client := tushare.NewClient() // Will use env vars
 	adapter := NewSpotAdapter(client)
 
@@ -42,7 +42,7 @@ func TestSpotAdapter_Fetch(t *testing.T) {
 			Symbols: []string{"000001.SZ", "600000.SH"},
 		}
 
-		resp, trace, err := adapter.Fetch(ctx, nil, req)
+		resp, trace, err := adapter.Fetch(ctx, req)
 		if err != nil {
 			msg := err.Error()
 			if strings.Contains(msg, "token") || strings.Contains(msg, "40101") || strings.Contains(msg, "-1") {

@@ -7,7 +7,6 @@ import (
 	"github.com/souloss/quantds/domain"
 	"github.com/souloss/quantds/domain/profile"
 	"github.com/souloss/quantds/manager"
-	"github.com/souloss/quantds/request"
 )
 
 // ProfileAdapter 将 Tushare 的 stock_basic、stock_company、daily_basic
@@ -37,7 +36,7 @@ func (a *ProfileAdapter) CanHandle(symbol string) bool {
 	return false
 }
 
-func (a *ProfileAdapter) Fetch(ctx context.Context, _ request.Client, req profile.Request) (profile.Response, *manager.RequestTrace, error) {
+func (a *ProfileAdapter) Fetch(ctx context.Context, req profile.Request) (profile.Response, *manager.RequestTrace, error) {
 	trace := manager.NewRequestTrace(Name)
 
 	tsCode, err := tushare.ToTushareSymbol(req.Symbol)
@@ -104,10 +103,10 @@ func (a *ProfileAdapter) Fetch(ctx context.Context, _ request.Client, req profil
 		p.DivYield = row.DvRatio
 		p.TurnoverRate = row.TurnoverRate
 		p.VolumeRatio = row.VolumeRatio
-		p.TotalShares = row.TotalShare * 10000   // 万股 → 股
-		p.FloatShares = row.FloatShare * 10000    // 万股 → 股
-		p.MarketCap = row.TotalMV * 10000         // 万元 → 元
-		p.FloatCap = row.CircMV * 10000           // 万元 → 元
+		p.TotalShares = row.TotalShare * 10000 // 万股 → 股
+		p.FloatShares = row.FloatShare * 10000 // 万股 → 股
+		p.MarketCap = row.TotalMV * 10000      // 万元 → 元
+		p.FloatCap = row.CircMV * 10000        // 万元 → 元
 	}
 
 	// 4. 财务指标（ROE/ROA/毛利率/净利率等）
@@ -132,8 +131,9 @@ func (a *ProfileAdapter) Fetch(ctx context.Context, _ request.Client, req profil
 
 	trace.Finish()
 	return profile.Response{
-		Data:   p,
-		Source: Name,
+		Data:        p,
+		Source:      Name,
+		DataVersion: 1,
 	}, trace, nil
 }
 

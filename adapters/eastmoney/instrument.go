@@ -7,7 +7,6 @@ import (
 	"github.com/souloss/quantds/domain"
 	"github.com/souloss/quantds/domain/instrument"
 	"github.com/souloss/quantds/manager"
-	"github.com/souloss/quantds/request"
 )
 
 // InstrumentAdapter adapts Eastmoney instrument data
@@ -45,7 +44,7 @@ func (a *InstrumentAdapter) CanHandle(symbol string) bool {
 }
 
 // Fetch retrieves instrument list
-func (a *InstrumentAdapter) Fetch(ctx context.Context, _ request.Client, req instrument.Request) (instrument.Response, *manager.RequestTrace, error) {
+func (a *InstrumentAdapter) Fetch(ctx context.Context, req instrument.Request) (instrument.Response, *manager.RequestTrace, error) {
 	trace := manager.NewRequestTrace(Name)
 
 	params := &eastmoney.InstrumentParams{
@@ -79,8 +78,9 @@ func (a *InstrumentAdapter) Fetch(ctx context.Context, _ request.Client, req ins
 
 	trace.Finish()
 	return instrument.Response{
-		Data:   instruments,
-		Source: Name,
+		Data:        instruments,
+		Source:      Name,
+		DataVersion: 1,
 	}, trace, nil
 }
 

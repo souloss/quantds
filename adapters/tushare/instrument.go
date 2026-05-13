@@ -7,7 +7,6 @@ import (
 	"github.com/souloss/quantds/domain"
 	"github.com/souloss/quantds/domain/instrument"
 	"github.com/souloss/quantds/manager"
-	"github.com/souloss/quantds/request"
 )
 
 // InstrumentAdapter adapts Tushare stock basic data to instrument list.
@@ -36,7 +35,7 @@ func (a *InstrumentAdapter) CanHandle(symbol string) bool {
 	return false
 }
 
-func (a *InstrumentAdapter) Fetch(ctx context.Context, _ request.Client, req instrument.Request) (instrument.Response, *manager.RequestTrace, error) {
+func (a *InstrumentAdapter) Fetch(ctx context.Context, req instrument.Request) (instrument.Response, *manager.RequestTrace, error) {
 	trace := manager.NewRequestTrace(Name)
 
 	// Map instrument.Exchange to Tushare exchange code
@@ -94,9 +93,10 @@ func (a *InstrumentAdapter) Fetch(ctx context.Context, _ request.Client, req ins
 
 	trace.Finish()
 	return instrument.Response{
-		Data:   items,
-		Total:  len(items),
-		Source: Name,
+		Data:        items,
+		Total:       len(items),
+		Source:      Name,
+		DataVersion: 1,
 	}, trace, nil
 }
 

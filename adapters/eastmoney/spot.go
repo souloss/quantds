@@ -7,7 +7,6 @@ import (
 	"github.com/souloss/quantds/domain"
 	"github.com/souloss/quantds/domain/spot"
 	"github.com/souloss/quantds/manager"
-	"github.com/souloss/quantds/request"
 )
 
 // SpotAdapter adapts Eastmoney real-time spot/quote data
@@ -20,7 +19,7 @@ func NewSpotAdapter(client *eastmoney.Client) *SpotAdapter {
 	return &SpotAdapter{client: client}
 }
 
-func (a *SpotAdapter) Name() string              { return Name }
+func (a *SpotAdapter) Name() string                      { return Name }
 func (a *SpotAdapter) SupportedMarkets() []domain.Market { return supportedMarkets }
 
 func (a *SpotAdapter) CanHandle(symbol string) bool {
@@ -36,14 +35,11 @@ func (a *SpotAdapter) CanHandle(symbol string) bool {
 	return false
 }
 
-func (a *SpotAdapter) Fetch(ctx context.Context, _ request.Client, req spot.Request) (spot.Response, *manager.RequestTrace, error) {
+func (a *SpotAdapter) Fetch(ctx context.Context, req spot.Request) (spot.Response, *manager.RequestTrace, error) {
 	trace := manager.NewRequestTrace(Name)
 
 	params := &eastmoney.QuoteParams{
 		PageSize: 500,
-	}
-	if len(req.Symbols) > 0 {
-		params.PageSize = len(req.Symbols)
 	}
 
 	result, record, err := a.client.GetQuotes(ctx, params)
@@ -53,6 +49,12 @@ func (a *SpotAdapter) Fetch(ctx context.Context, _ request.Client, req spot.Requ
 		return spot.Response{}, trace, err
 	}
 
+	// Build a set of requested symbols for filtering
+	wantSymbols := make(map[string]bool, len(req.Symbols))
+	for _, s := range req.Symbols {
+		wantSymbols[s] = true
+	}
+
 	quotes := make([]spot.Quote, 0, len(result.Data))
 	for _, data := range result.Data {
 		exchange := "SZ"
@@ -60,6 +62,11 @@ func (a *SpotAdapter) Fetch(ctx context.Context, _ request.Client, req spot.Requ
 			exchange = "SH"
 		}
 		symbol := data.Code + "." + exchange
+
+		// Filter by requested symbols if specified
+		if len(wantSymbols) > 0 && !wantSymbols[symbol] {
+			continue
+		}
 
 		quotes = append(quotes, spot.Quote{
 			Symbol:       symbol,
@@ -80,9 +87,10 @@ func (a *SpotAdapter) Fetch(ctx context.Context, _ request.Client, req spot.Requ
 
 	trace.Finish()
 	return spot.Response{
-		Quotes: quotes,
-		Total:  len(quotes),
-		Source: Name,
+		Quotes:      quotes,
+		Total:       len(quotes),
+		Source:      Name,
+		DataVersion: 1,
 	}, trace, nil
 }
 

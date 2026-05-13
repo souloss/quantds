@@ -41,7 +41,7 @@ func TestIntegration_InstrumentAdapter(t *testing.T) {
 	defer cancel()
 
 	// Test fetching all instruments
-	resp, trace, err := adapter.Fetch(ctx, nil, instrument.Request{
+	resp, trace, err := adapter.Fetch(ctx, instrument.Request{
 		PageSize: 100,
 	})
 
@@ -96,12 +96,12 @@ func TestIntegration_AnnouncementAdapter(t *testing.T) {
 	startTime := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
 	endTime := time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
 
-	resp2, trace2, err := adapter.Fetch(ctx, nil, announcement.Request{
+	resp2, trace2, err := adapter.Fetch(ctx, announcement.Request{
 		Symbol:    "000001.SZ",
 		PageSize:  10,
 		PageIndex: 1,
-		StartTime: &startTime,
-		EndTime:   &endTime,
+		StartTime: startTime,
+		EndTime:   endTime,
 	})
 
 	if err != nil {
@@ -121,7 +121,7 @@ func TestIntegration_AnnouncementAdapter(t *testing.T) {
 		t.Errorf("Expected symbol '000001.SZ', got '%s'", resp2.Symbol)
 	}
 
-	t.Logf("Fetched %d announcements, total: %d, hasMore: %v", 
+	t.Logf("Fetched %d announcements, total: %d, hasMore: %v",
 		len(resp2.Data), resp2.TotalCount, resp2.HasMore)
 
 	// Verify first few entries

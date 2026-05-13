@@ -42,24 +42,24 @@ func (p *FinaIndicatorParams) ToMap() map[string]string {
 
 // FinaIndicatorRow 财务指标数据行。
 type FinaIndicatorRow struct {
-	TSCode          string  // 股票代码
-	AnnDate         string  // 公告日期
-	EndDate         string  // 报告期
-	ROE             float64 // 净资产收益率 (%)
-	ROEWAA          float64 // 加权平均净资产收益率 (%)
-	ROA             float64 // 总资产报酬率 (%)
-	NetProfitMargin float64 // 销售净利率 (%)
+	TSCode            string  // 股票代码
+	AnnDate           string  // 公告日期
+	EndDate           string  // 报告期
+	ROE               float64 // 净资产收益率 (%)
+	ROEWAA            float64 // 加权平均净资产收益率 (%)
+	ROA               float64 // 总资产报酬率 (%)
+	NetProfitMargin   float64 // 销售净利率 (%)
 	GrossProfitMargin float64 // 销售毛利率 (%)
-	CurrentRatio    float64 // 流动比率
-	QuickRatio      float64 // 速动比率
-	DebtToAssets    float64 // 资产负债率 (%)
-	TurnDays        float64 // 营业周期（天）
-	ROAYearly       float64 // 年化总资产净利率 (%)
-	ROEAvg          float64 // 平均净资产收益率 (%)
-	AssetsTurn      float64 // 总资产周转率
-	OpIncome        float64 // 经营活动净收益（元）
-	EBIT            float64 // 息税前利润（元）
-	EBITDA          float64 // 息税折旧摊销前利润（元）
+	CurrentRatio      float64 // 流动比率
+	QuickRatio        float64 // 速动比率
+	DebtToAssets      float64 // 资产负债率 (%)
+	TurnDays          float64 // 营业周期（天）
+	ROAYearly         float64 // 年化总资产净利率 (%)
+	ROEAvg            float64 // 平均净资产收益率 (%)
+	AssetsTurn        float64 // 总资产周转率
+	OpIncome          float64 // 经营活动净收益（元）
+	EBIT              float64 // 息税前利润（元）
+	EBITDA            float64 // 息税折旧摊销前利润（元）
 }
 
 // GetFinaIndicator 获取财务指标数据。

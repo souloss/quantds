@@ -38,28 +38,28 @@ type InstrumentResult struct {
 
 // InstrumentData represents a single instrument/trading pair
 type InstrumentData struct {
-	InstID     string `json:"instId"`     // Instrument ID, e.g., "BTC-USDT"
-	InstType   string `json:"instType"`   // Instrument type: SPOT, MARGIN, SWAP, FUTURES, OPTION
-	BaseCcy    string `json:"baseCcy"`    // Base currency, e.g., "BTC"
-	QuoteCcy   string `json:"quoteCcy"`   // Quote currency, e.g., "USDT"
-	SettleCcy  string `json:"settleCcy"`  // Settlement currency
-	CtVal      string `json:"ctVal"`      // Contract value
-	CtMult     string `json:"ctMult"`     // Contract multiplier
-	CtValCcy   string `json:"ctValCcy"`   // Contract value currency
-	OptType    string `json:"optType"`    // Option type: C (call), P (put)
-	Stk        string `json:"stk"`        // Strike price
-	ListTime   string `json:"listTime"`   // Listing time
-	ExpTime    string `json:"expTime"`    // Expiration time
-	Lever      string `json:"lever"`      // Max leverage
-	TickSz     string `json:"tickSz"`     // Tick size
-	LotSz      string `json:"lotSz"`      // Lot size
-	MinSz      string `json:"minSz"`      // Minimum order size
-	CtType     string `json:"ctType"`     // Contract type
-	Alias      string `json:"alias"`      // Contract date alias
-	State      string `json:"state"`      // Instrument state: live
-	Uly        string `json:"uly"`        // Underlying instrument
-	Category   string `json:"category"`   // Fee category
-	BaseCcyLogo string `json:"baseCcyLogo"` // Base currency logo URL
+	InstID       string `json:"instId"`       // Instrument ID, e.g., "BTC-USDT"
+	InstType     string `json:"instType"`     // Instrument type: SPOT, MARGIN, SWAP, FUTURES, OPTION
+	BaseCcy      string `json:"baseCcy"`      // Base currency, e.g., "BTC"
+	QuoteCcy     string `json:"quoteCcy"`     // Quote currency, e.g., "USDT"
+	SettleCcy    string `json:"settleCcy"`    // Settlement currency
+	CtVal        string `json:"ctVal"`        // Contract value
+	CtMult       string `json:"ctMult"`       // Contract multiplier
+	CtValCcy     string `json:"ctValCcy"`     // Contract value currency
+	OptType      string `json:"optType"`      // Option type: C (call), P (put)
+	Stk          string `json:"stk"`          // Strike price
+	ListTime     string `json:"listTime"`     // Listing time
+	ExpTime      string `json:"expTime"`      // Expiration time
+	Lever        string `json:"lever"`        // Max leverage
+	TickSz       string `json:"tickSz"`       // Tick size
+	LotSz        string `json:"lotSz"`        // Lot size
+	MinSz        string `json:"minSz"`        // Minimum order size
+	CtType       string `json:"ctType"`       // Contract type
+	Alias        string `json:"alias"`        // Contract date alias
+	State        string `json:"state"`        // Instrument state: live
+	Uly          string `json:"uly"`          // Underlying instrument
+	Category     string `json:"category"`     // Fee category
+	BaseCcyLogo  string `json:"baseCcyLogo"`  // Base currency logo URL
 	QuoteCcyLogo string `json:"quoteCcyLogo"` // Quote currency logo URL
 }
 

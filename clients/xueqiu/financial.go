@@ -62,7 +62,7 @@ func (c *Client) getFinancial(ctx context.Context, apiTmpl string, params *Finan
 	}
 
 	api := fmt.Sprintf(apiTmpl, xueqiuSymbol)
-	
+
 	query := url.Values{}
 	query.Set("symbol", xueqiuSymbol)
 	if params.Type != "" {
@@ -105,7 +105,7 @@ func parseFinancialResponse(body []byte) ([]FinancialItem, error) {
 	// Since fields are dynamic, we need map[string]interface{} unmarshal for items.
 	// But "list" is an array of objects.
 	// We can't define struct easily.
-	
+
 	// Let's use map parsing.
 	var rawMap map[string]interface{}
 	if err := json.Unmarshal(body, &rawMap); err != nil {

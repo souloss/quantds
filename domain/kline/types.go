@@ -5,7 +5,6 @@
 package kline
 
 import (
-	"context"
 	"time"
 
 	"github.com/souloss/quantds/domain"
@@ -60,9 +59,10 @@ func (r Request) CacheKey() string {
 
 // Response represents a K-line data response.
 type Response struct {
-	Symbol string // 标的代码
-	Bars   []Bar  // K线数据
-	Source string // 数据源名称
+	Symbol      string // 标的代码
+	Bars        []Bar  // K线数据
+	Source      string // 数据源名称
+	DataVersion int    // 数据格式版本（当前为1）
 }
 
 // Bar represents a single K-line (OHLCV) data point.
@@ -79,13 +79,6 @@ type Bar struct {
 	TurnoverRate float64   // 换手率 (%)
 }
 
-// Source defines the interface for K-line data providers.
-type Source interface {
-	Name() string
-	Fetch(ctx context.Context, req Request) (Response, error)
-	HealthCheck(ctx context.Context) error
-}
-
 // ParseSymbol parses a symbol string into code and exchange.
 func ParseSymbol(symbol string) (code string, exchange Exchange, ok bool) {
 	return domain.ParseSymbol(symbol)
@@ -94,4 +87,33 @@ func ParseSymbol(symbol string) (code string, exchange Exchange, ok bool) {
 // FormatSymbol formats code and exchange into a symbol string.
 func FormatSymbol(code string, exchange Exchange) string {
 	return domain.FormatSymbol(code, exchange)
+}
+
+// Normalize fills in computed fields for each Bar that are zero-valued.
+// It computes Change, ChangeRate from Open/Close, and Turnover from Close*Volume
+// when those fields are missing (zero).
+// When Open is zero, the data is considered incomplete and no derived fields are computed.
+func (b *Bar) Normalize() {
+	if b.Open == 0 {
+		return
+	}
+	if b.Change == 0 {
+		b.Change = b.Close - b.Open
+	}
+	if b.ChangeRate == 0 {
+		b.ChangeRate = (b.Close - b.Open) / b.Open * 100
+	}
+	if b.Turnover == 0 && b.Close != 0 && b.Volume != 0 {
+		b.Turnover = b.Close * b.Volume
+	}
+}
+
+// Normalize fills in computed fields for all Bars in the response.
+func (r *Response) Normalize() {
+	for i := range r.Bars {
+		r.Bars[i].Normalize()
+	}
+	if r.DataVersion == 0 {
+		r.DataVersion = 1
+	}
 }

@@ -10,11 +10,11 @@ import (
 // Tushare API: balancesheet
 // 获取上市公司资产负债表数据。
 type BalanceSheetParams struct {
-	TSCode    string // 股票代码 (e.g., "000001.SZ")
-	AnnDate   string // 公告日期 (YYYYMMDD)
-	StartDate string // 报告期起始日期 (YYYYMMDD)
-	EndDate   string // 报告期结束日期 (YYYYMMDD)
-	Period    string // 报告期 (e.g., "20241231")
+	TSCode     string // 股票代码 (e.g., "000001.SZ")
+	AnnDate    string // 公告日期 (YYYYMMDD)
+	StartDate  string // 报告期起始日期 (YYYYMMDD)
+	EndDate    string // 报告期结束日期 (YYYYMMDD)
+	Period     string // 报告期 (e.g., "20241231")
 	ReportType string // 报告类型: 1=合并报表
 }
 
@@ -46,27 +46,27 @@ func (p *BalanceSheetParams) ToMap() map[string]string {
 
 // BalanceSheetRow 资产负债表数据行。
 type BalanceSheetRow struct {
-	TSCode         string  // 股票代码
-	AnnDate        string  // 公告日期
-	FAnnDate       string  // 实际公告日期
-	EndDate        string  // 报告期
-	ReportType     string  // 报告类型
-	CompType       string  // 公司类型
-	TotalAssets    float64 // 总资产（元）
-	TotalCurAssets float64 // 流动资产合计（元）
-	TotalNCA       float64 // 非流动资产合计（元）
-	TotalLiab      float64 // 总负债（元）
-	TotalCurLiab   float64 // 流动负债合计（元）
-	TotalNCL       float64 // 非流动负债合计（元）
-	TotalHldrEqy   float64 // 股东权益合计（不含少数股东）（元）
+	TSCode          string  // 股票代码
+	AnnDate         string  // 公告日期
+	FAnnDate        string  // 实际公告日期
+	EndDate         string  // 报告期
+	ReportType      string  // 报告类型
+	CompType        string  // 公司类型
+	TotalAssets     float64 // 总资产（元）
+	TotalCurAssets  float64 // 流动资产合计（元）
+	TotalNCA        float64 // 非流动资产合计（元）
+	TotalLiab       float64 // 总负债（元）
+	TotalCurLiab    float64 // 流动负债合计（元）
+	TotalNCL        float64 // 非流动负债合计（元）
+	TotalHldrEqy    float64 // 股东权益合计（不含少数股东）（元）
 	TotalHldrEqyInc float64 // 股东权益合计（含少数股东）（元）
-	CapRese        float64 // 资本公积（元）
-	SurplusRese    float64 // 盈余公积（元）
-	UndistProfit   float64 // 未分配利润（元）
-	MoneyCap       float64 // 货币资金（元）
-	AccountsReceiv float64 // 应收账款（元）
-	Inventories    float64 // 存货（元）
-	FixAssets      float64 // 固定资产（元）
+	CapRese         float64 // 资本公积（元）
+	SurplusRese     float64 // 盈余公积（元）
+	UndistProfit    float64 // 未分配利润（元）
+	MoneyCap        float64 // 货币资金（元）
+	AccountsReceiv  float64 // 应收账款（元）
+	Inventories     float64 // 存货（元）
+	FixAssets       float64 // 固定资产（元）
 }
 
 // GetBalanceSheet 获取资产负债表数据。

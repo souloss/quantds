@@ -12,7 +12,7 @@ import (
 // API Endpoint Constants
 const (
 	EndpointMarketChart = "/coins/%s/market_chart"
-	
+
 	// Query Parameters
 	ParamVsCurrency = "vs_currency"
 	ParamDays       = "days"
@@ -21,10 +21,10 @@ const (
 
 // MarketChartRequest represents parameters for market chart request
 type MarketChartRequest struct {
-	ID          string // Coin ID (e.g. "bitcoin")
-	VsCurrency  string // Target currency (e.g. "usd")
-	Days        string // Data up to number of days ago (e.g. "1", "14", "30", "max")
-	Interval    string // Data interval (e.g. "daily")
+	ID         string // Coin ID (e.g. "bitcoin")
+	VsCurrency string // Target currency (e.g. "usd")
+	Days       string // Data up to number of days ago (e.g. "1", "14", "30", "max")
+	Interval   string // Data interval (e.g. "daily")
 }
 
 // MarketChartResponse represents the response structure

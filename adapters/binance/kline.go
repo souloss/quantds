@@ -8,7 +8,6 @@ import (
 	"github.com/souloss/quantds/domain"
 	"github.com/souloss/quantds/domain/kline"
 	"github.com/souloss/quantds/manager"
-	"github.com/souloss/quantds/request"
 )
 
 // Adapter name
@@ -53,7 +52,7 @@ func (a *KlineAdapter) CanHandle(symbol string) bool {
 }
 
 // Fetch retrieves K-line data
-func (a *KlineAdapter) Fetch(ctx context.Context, _ request.Client, req kline.Request) (kline.Response, *manager.RequestTrace, error) {
+func (a *KlineAdapter) Fetch(ctx context.Context, req kline.Request) (kline.Response, *manager.RequestTrace, error) {
 	trace := manager.NewRequestTrace(Name)
 
 	// Convert symbol to Binance format
@@ -101,9 +100,10 @@ func (a *KlineAdapter) Fetch(ctx context.Context, _ request.Client, req kline.Re
 
 	trace.Finish()
 	return kline.Response{
-		Symbol: req.Symbol,
-		Bars:   bars,
-		Source: Name,
+		Symbol:      req.Symbol,
+		Bars:        bars,
+		Source:      Name,
+		DataVersion: 1,
 	}, trace, nil
 }
 

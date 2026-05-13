@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	BaseURL = "https://www.alphavantage.co"
+	BaseURL  = "https://www.alphavantage.co"
 	QueryAPI = "/query"
 )
 

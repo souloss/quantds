@@ -38,22 +38,22 @@ func (p *DailyBasicParams) ToMap() map[string]string {
 
 // DailyBasicRow 每日指标数据行。
 type DailyBasicRow struct {
-	TSCode       string  // 股票代码
-	TradeDate    string  // 交易日期 (YYYYMMDD)
-	TurnoverRate float64 // 换手率 (%)
+	TSCode        string  // 股票代码
+	TradeDate     string  // 交易日期 (YYYYMMDD)
+	TurnoverRate  float64 // 换手率 (%)
 	TurnoverRateF float64 // 换手率（自由流通股本）(%)
-	VolumeRatio  float64 // 量比
-	PE           float64 // 市盈率（动态）
-	PETTM        float64 // 市盈率（TTM）
-	PB           float64 // 市净率
-	PS           float64 // 市销率
-	PSTTM        float64 // 市销率（TTM）
-	DvRatio      float64 // 股息率 (%)
-	DvTTM        float64 // 股息率（TTM）(%)
-	TotalShare   float64 // 总股本（万股）
-	FloatShare   float64 // 流通股本（万股）
-	TotalMV      float64 // 总市值（万元）
-	CircMV       float64 // 流通市值（万元）
+	VolumeRatio   float64 // 量比
+	PE            float64 // 市盈率（动态）
+	PETTM         float64 // 市盈率（TTM）
+	PB            float64 // 市净率
+	PS            float64 // 市销率
+	PSTTM         float64 // 市销率（TTM）
+	DvRatio       float64 // 股息率 (%)
+	DvTTM         float64 // 股息率（TTM）(%)
+	TotalShare    float64 // 总股本（万股）
+	FloatShare    float64 // 流通股本（万股）
+	TotalMV       float64 // 总市值（万元）
+	CircMV        float64 // 流通市值（万元）
 }
 
 // GetDailyBasic 获取每日交易指标。

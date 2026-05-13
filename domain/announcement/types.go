@@ -41,8 +41,8 @@ type Request struct {
 	Category  Category           // 按分类筛选
 	PageSize  int                // 分页大小
 	PageIndex int                // 页码（从1开始）
-	StartTime *time.Time         // 起始时间
-	EndTime   *time.Time         // 结束时间
+	StartTime time.Time          // 起始时间
+	EndTime   time.Time          // 结束时间
 }
 
 // CacheKey returns the cache key for the request.
@@ -59,13 +59,14 @@ func (r Request) CacheKey() string {
 
 // Response represents an announcement/news response.
 type Response struct {
-	Symbol     string         // 标的代码
-	Data       []Announcement // 公告列表
-	Source     string         // 数据源名称
-	HasMore    bool           // 是否有更多数据
-	TotalCount int            // 总数
-	PageIndex  int            // 当前页码
-	PageSize   int            // 分页大小
+	Symbol      string         // 标的代码
+	Data        []Announcement // 公告列表
+	Source      string         // 数据源名称
+	HasMore     bool           // 是否有更多数据
+	TotalCount  int            // 总数
+	PageIndex   int            // 当前页码
+	PageSize    int            // 分页大小
+	DataVersion int            // 数据格式版本（当前为1）
 }
 
 // Announcement represents a single announcement/news item.

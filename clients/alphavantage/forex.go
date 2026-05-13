@@ -15,11 +15,11 @@ type ForexRateParams struct {
 }
 
 type ForexRateResult struct {
-	FromCurrency string
-	ToCurrency   string
-	ExchangeRate float64
-	BidPrice     float64
-	AskPrice     float64
+	FromCurrency  string
+	ToCurrency    string
+	ExchangeRate  float64
+	BidPrice      float64
+	AskPrice      float64
 	LastRefreshed string
 }
 

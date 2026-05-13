@@ -9,7 +9,6 @@ import (
 	"github.com/souloss/quantds/domain"
 	"github.com/souloss/quantds/domain/announcement"
 	"github.com/souloss/quantds/manager"
-	"github.com/souloss/quantds/request"
 )
 
 type AnnouncementAdapter struct {
@@ -44,16 +43,16 @@ func (a *AnnouncementAdapter) CanHandle(symbol string) bool {
 	return false
 }
 
-func (a *AnnouncementAdapter) Fetch(ctx context.Context, _ request.Client, req announcement.Request) (announcement.Response, *manager.RequestTrace, error) {
+func (a *AnnouncementAdapter) Fetch(ctx context.Context, req announcement.Request) (announcement.Response, *manager.RequestTrace, error) {
 	trace := manager.NewRequestTrace(Name)
 
 	params := &tushare.AnnouncementParams{
 		TsCode: req.Symbol,
 	}
-	if req.StartTime != nil {
+	if !req.StartTime.IsZero() {
 		params.StartDate = req.StartTime.Format("20060102")
 	}
-	if req.EndTime != nil {
+	if !req.EndTime.IsZero() {
 		params.EndDate = req.EndTime.Format("20060102")
 	}
 
@@ -85,10 +84,11 @@ func (a *AnnouncementAdapter) Fetch(ctx context.Context, _ request.Client, req a
 
 	trace.Finish()
 	return announcement.Response{
-		Symbol:     req.Symbol,
-		Data:       anns,
-		Source:     Name,
-		TotalCount: len(anns),
+		Symbol:      req.Symbol,
+		Data:        anns,
+		Source:      Name,
+		DataVersion: 1,
+		TotalCount:  len(anns),
 	}, trace, nil
 }
 

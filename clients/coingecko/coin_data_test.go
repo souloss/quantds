@@ -29,7 +29,7 @@ func TestClient_GetCoinData(t *testing.T) {
 
 	t.Logf("Coin Name: %s", result.Name)
 	t.Logf("Symbol: %s", result.Symbol)
-	
+
 	if result.ID != "bitcoin" {
 		t.Errorf("Expected ID bitcoin, got %s", result.ID)
 	}

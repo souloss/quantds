@@ -8,7 +8,6 @@ import (
 	"github.com/souloss/quantds/domain"
 	"github.com/souloss/quantds/domain/announcement"
 	"github.com/souloss/quantds/manager"
-	"github.com/souloss/quantds/request"
 )
 
 // AnnouncementAdapter adapts Eastmoney announcement data
@@ -46,7 +45,7 @@ func (a *AnnouncementAdapter) CanHandle(symbol string) bool {
 }
 
 // Fetch retrieves announcement data
-func (a *AnnouncementAdapter) Fetch(ctx context.Context, _ request.Client, req announcement.Request) (announcement.Response, *manager.RequestTrace, error) {
+func (a *AnnouncementAdapter) Fetch(ctx context.Context, req announcement.Request) (announcement.Response, *manager.RequestTrace, error) {
 	trace := manager.NewRequestTrace(Name)
 
 	params := &eastmoney.AnnouncementParams{
@@ -90,11 +89,12 @@ func (a *AnnouncementAdapter) Fetch(ctx context.Context, _ request.Client, req a
 
 	trace.Finish()
 	return announcement.Response{
-		Symbol:     req.Symbol,
-		Data:       announcements,
-		Source:     Name,
-		HasMore:    hasMore,
-		TotalCount: result.Total,
+		Symbol:      req.Symbol,
+		Data:        announcements,
+		Source:      Name,
+		DataVersion: 1,
+		HasMore:     hasMore,
+		TotalCount:  result.Total,
 	}, trace, nil
 }
 

@@ -10,7 +10,6 @@ import (
 	"github.com/souloss/quantds/domain"
 	"github.com/souloss/quantds/domain/announcement"
 	"github.com/souloss/quantds/manager"
-	"github.com/souloss/quantds/request"
 )
 
 // AnnouncementAdapter adapts CNInfo announcement data
@@ -51,7 +50,7 @@ func (a *AnnouncementAdapter) CanHandle(symbol string) bool {
 }
 
 // Fetch retrieves announcement data
-func (a *AnnouncementAdapter) Fetch(ctx context.Context, _ request.Client, req announcement.Request) (announcement.Response, *manager.RequestTrace, error) {
+func (a *AnnouncementAdapter) Fetch(ctx context.Context, req announcement.Request) (announcement.Response, *manager.RequestTrace, error) {
 	trace := manager.NewRequestTrace(Name)
 
 	pageNum := req.PageIndex
@@ -81,7 +80,7 @@ func (a *AnnouncementAdapter) Fetch(ctx context.Context, _ request.Client, req a
 
 	// Build date range filter
 	seDate := ""
-	if req.StartTime != nil && req.EndTime != nil {
+	if !req.StartTime.IsZero() && !req.EndTime.IsZero() {
 		seDate = req.StartTime.Format("2006-01-02") + "~" + req.EndTime.Format("2006-01-02")
 	}
 
@@ -106,7 +105,7 @@ func (a *AnnouncementAdapter) Fetch(ctx context.Context, _ request.Client, req a
 		if row.AnnouncementTime > 0 {
 			publishTime = time.Unix(row.AnnouncementTime/1000, 0).Format("2006-01-02 15:04:05")
 		}
-		
+
 		url := ""
 		if row.AdjunctURL != "" {
 			url = fmt.Sprintf("http://static.cninfo.com.cn/%s", row.AdjunctURL)
@@ -135,13 +134,14 @@ func (a *AnnouncementAdapter) Fetch(ctx context.Context, _ request.Client, req a
 
 	trace.Finish()
 	return announcement.Response{
-		Symbol:     req.Symbol,
-		Data:       announcements,
-		Source:     Name,
-		HasMore:    hasMore,
-		TotalCount: total,
-		PageIndex:  pageNum,
-		PageSize:   pageSize,
+		Symbol:      req.Symbol,
+		Data:        announcements,
+		Source:      Name,
+		DataVersion: 1,
+		HasMore:     hasMore,
+		TotalCount:  total,
+		PageIndex:   pageNum,
+		PageSize:    pageSize,
 	}, trace, nil
 }
 

@@ -7,7 +7,6 @@ import (
 	"github.com/souloss/quantds/domain"
 	"github.com/souloss/quantds/domain/profile"
 	"github.com/souloss/quantds/manager"
-	"github.com/souloss/quantds/request"
 )
 
 // ProfileAdapter adapts Eastmoney profile data
@@ -45,7 +44,7 @@ func (a *ProfileAdapter) CanHandle(symbol string) bool {
 }
 
 // Fetch retrieves profile data
-func (a *ProfileAdapter) Fetch(ctx context.Context, _ request.Client, req profile.Request) (profile.Response, *manager.RequestTrace, error) {
+func (a *ProfileAdapter) Fetch(ctx context.Context, req profile.Request) (profile.Response, *manager.RequestTrace, error) {
 	trace := manager.NewRequestTrace(Name)
 
 	params := &eastmoney.ProfileParams{
@@ -88,7 +87,8 @@ func (a *ProfileAdapter) Fetch(ctx context.Context, _ request.Client, req profil
 			VolumeRatio:   result.VolumeRatio,
 			Amplitude:     result.Amplitude,
 		},
-		Source: Name,
+		Source:      Name,
+		DataVersion: 1,
 	}, trace, nil
 }
 

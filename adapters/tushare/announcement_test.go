@@ -32,14 +32,14 @@ func TestAnnouncementAdapter_Fetch(t *testing.T) {
 		ctx := context.Background()
 		now := time.Now()
 		startTime := now.AddDate(0, 0, -30)
-		
+
 		req := announcement.Request{
 			Symbol:    "000001.SZ",
-			StartTime: &startTime,
-			EndTime:   &now,
+			StartTime: startTime,
+			EndTime:   now,
 		}
 
-		resp, trace, err := adapter.Fetch(ctx, nil, req)
+		resp, trace, err := adapter.Fetch(ctx, req)
 		if err != nil {
 			msg := err.Error()
 			if strings.Contains(msg, "token") || strings.Contains(msg, "40101") || strings.Contains(msg, "-1") {

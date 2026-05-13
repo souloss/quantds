@@ -8,7 +8,6 @@ import (
 	"github.com/souloss/quantds/domain"
 	"github.com/souloss/quantds/domain/spot"
 	"github.com/souloss/quantds/manager"
-	"github.com/souloss/quantds/request"
 )
 
 type SpotAdapter struct {
@@ -40,7 +39,7 @@ func (a *SpotAdapter) CanHandle(symbol string) bool {
 	return false
 }
 
-func (a *SpotAdapter) Fetch(ctx context.Context, _ request.Client, req spot.Request) (spot.Response, *manager.RequestTrace, error) {
+func (a *SpotAdapter) Fetch(ctx context.Context, req spot.Request) (spot.Response, *manager.RequestTrace, error) {
 	trace := manager.NewRequestTrace(Name)
 
 	if len(req.Symbols) == 0 {
@@ -89,9 +88,10 @@ func (a *SpotAdapter) Fetch(ctx context.Context, _ request.Client, req spot.Requ
 
 	trace.Finish()
 	return spot.Response{
-		Quotes: quotes,
-		Total:  len(quotes),
-		Source: Name,
+		Quotes:      quotes,
+		Total:       len(quotes),
+		Source:      Name,
+		DataVersion: 1,
 	}, trace, nil
 }
 

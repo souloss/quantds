@@ -7,7 +7,6 @@ import (
 	"github.com/souloss/quantds/domain"
 	"github.com/souloss/quantds/domain/instrument"
 	"github.com/souloss/quantds/manager"
-	"github.com/souloss/quantds/request"
 )
 
 // InstrumentAdapter adapts OKX instrument data
@@ -36,7 +35,7 @@ func (a *InstrumentAdapter) CanHandle(symbol string) bool {
 }
 
 // Fetch retrieves instrument list from OKX
-func (a *InstrumentAdapter) Fetch(ctx context.Context, _ request.Client, req instrument.Request) (instrument.Response, *manager.RequestTrace, error) {
+func (a *InstrumentAdapter) Fetch(ctx context.Context, req instrument.Request) (instrument.Response, *manager.RequestTrace, error) {
 	trace := manager.NewRequestTrace(Name)
 
 	// Default to SPOT instruments
@@ -100,11 +99,12 @@ func (a *InstrumentAdapter) Fetch(ctx context.Context, _ request.Client, req ins
 
 	trace.Finish()
 	return instrument.Response{
-		Data:       instruments,
-		Total:      total,
-		Source:     Name,
-		PageNumber: req.PageNumber,
-		PageSize:   req.PageSize,
+		Data:        instruments,
+		Total:       total,
+		Source:      Name,
+		DataVersion: 1,
+		PageNumber:  req.PageNumber,
+		PageSize:    req.PageSize,
 	}, trace, nil
 }
 

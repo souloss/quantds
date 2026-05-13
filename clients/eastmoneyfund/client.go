@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	FundListURL      = "http://fund.eastmoney.com/js/fundcode_search.js"
-	FundEstimateURL  = "https://fundgz.1234567.com.cn/js"
-	FundNAVURL       = "http://fund.eastmoney.com/f10/F10DataApi.aspx"
-	FundDetailURL    = "http://fund.eastmoney.com/pingzhongdata"
+	FundListURL     = "http://fund.eastmoney.com/js/fundcode_search.js"
+	FundEstimateURL = "https://fundgz.1234567.com.cn/js"
+	FundNAVURL      = "http://fund.eastmoney.com/f10/F10DataApi.aspx"
+	FundDetailURL   = "http://fund.eastmoney.com/pingzhongdata"
 )
 
 var DefaultHeaders = map[string]string{

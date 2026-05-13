@@ -18,13 +18,13 @@ type SnapshotResult struct {
 }
 
 type SnapshotData struct {
-	Ticker string
-	Day    SnapshotBar
-	Min    SnapshotBar
-	PrevDay SnapshotBar
-	Change  float64
+	Ticker        string
+	Day           SnapshotBar
+	Min           SnapshotBar
+	PrevDay       SnapshotBar
+	Change        float64
 	ChangePercent float64
-	Updated int64
+	Updated       int64
 }
 
 type SnapshotBar struct {

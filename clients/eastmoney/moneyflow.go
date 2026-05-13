@@ -31,12 +31,12 @@ type MoneyFlowParams struct {
 
 // MoneyFlowData represents real-time money flow data
 type MoneyFlowData struct {
-	MainNetInflow      float64 `json:"main_net_inflow"`      // 主力净流入
+	MainNetInflow      float64 `json:"main_net_inflow"`       // 主力净流入
 	MainNetInflowRatio float64 `json:"main_net_inflow_ratio"` // 主力净流入占比
-	SuperNetInflow     float64 `json:"super_net_inflow"`     // 超大单净流入
-	LargeNetInflow     float64 `json:"large_net_inflow"`     // 大单净流入
-	MediumNetInflow    float64 `json:"medium_net_inflow"`    // 中单净流入
-	SmallNetInflow     float64 `json:"small_net_inflow"`     // 小单净流入
+	SuperNetInflow     float64 `json:"super_net_inflow"`      // 超大单净流入
+	LargeNetInflow     float64 `json:"large_net_inflow"`      // 大单净流入
+	MediumNetInflow    float64 `json:"medium_net_inflow"`     // 中单净流入
+	SmallNetInflow     float64 `json:"small_net_inflow"`      // 小单净流入
 }
 
 // GetMoneyFlow retrieves real-time money flow for a stock
@@ -204,7 +204,7 @@ func parseMoneyFlowHistoryResponse(body []byte) ([]MoneyFlowHistoryItem, error) 
 		if len(parts) < 13 {
 			continue
 		}
-		
+
 		item := MoneyFlowHistoryItem{
 			Date:               parts[0],
 			ClosePrice:         parseFloat(parts[1]),

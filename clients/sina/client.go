@@ -45,8 +45,7 @@ const (
 	BaseURL = "https://quotes.sina.cn"
 
 	// API Endpoints
-	SpotAPI      = "https://hq.sinajs.cn"
-	MoneyFlowAPI = "http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/MoneyFlow.ssl_qsfx_zjll_node"
+	SpotAPI = "https://hq.sinajs.cn"
 
 	// Default Headers
 	DefaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"

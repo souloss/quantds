@@ -22,79 +22,79 @@
 //
 // Example:
 //
-//      client := eastmoney.NewClient()
-//      defer client.Close()
+//	client := eastmoney.NewClient()
+//	defer client.Close()
 //
-//      // Get daily K-line for 平安银行 (000001.SZ)
-//      result, record, err := client.GetKline(ctx, &eastmoney.KlineParams{
-//          Symbol:    "000001.SZ",
-//          StartDate: "20240101",
-//          EndDate:   "20241231",
-//          Period:    "101",  // daily
-//          Adjust:    "1",    // forward adjustment
-//      })
+//	// Get daily K-line for 平安银行 (000001.SZ)
+//	result, record, err := client.GetKline(ctx, &eastmoney.KlineParams{
+//	    Symbol:    "000001.SZ",
+//	    StartDate: "20240101",
+//	    EndDate:   "20241231",
+//	    Period:    "101",  // daily
+//	    Adjust:    "1",    // forward adjustment
+//	})
 //
-//      // Get real-time quotes
-//      quotes, record, err := client.GetSpot(ctx, &eastmoney.SpotParams{
-//          Market:   "SZ",
-//          PageSize: 100,
-//      })
+//	// Get real-time quotes
+//	quotes, record, err := client.GetSpot(ctx, &eastmoney.SpotParams{
+//	    Market:   "SZ",
+//	    PageSize: 100,
+//	})
 package eastmoney
 
 import (
-        "time"
+	"time"
 
-        "github.com/failsafe-go/failsafe-go/timeout"
-        "github.com/souloss/quantds/request"
+	"github.com/failsafe-go/failsafe-go/timeout"
+	"github.com/souloss/quantds/request"
 )
 
 const (
-        BaseURL    = "https://push2his.eastmoney.com"
-        PushURL    = "https://push2.eastmoney.com"
-        Datacenter = "https://datacenter.eastmoney.com"
+	BaseURL    = "https://push2his.eastmoney.com"
+	PushURL    = "https://push2.eastmoney.com"
+	Datacenter = "https://datacenter.eastmoney.com"
 )
 
 type Client struct {
-        http request.Client
+	http request.Client
 }
 
 type Option func(*Client)
 
 // WithHTTPClient sets a custom HTTP client
 func WithHTTPClient(httpClient request.Client) Option {
-        return func(c *Client) {
-                c.http = httpClient
-        }
+	return func(c *Client) {
+		c.http = httpClient
+	}
 }
 
 // WithTimeout sets the request timeout
 func WithTimeout(d time.Duration) Option {
-        return func(c *Client) {
-                c.http = request.NewClient(request.DefaultConfig(
-                        request.WithTimeout(timeout.New[request.Response](d)),
-                ))
-        }
+	return func(c *Client) {
+		c.http = request.NewClient(request.DefaultConfig(
+			request.WithTimeout(timeout.New[request.Response](d)),
+		))
+	}
 }
 
 // WithConfig sets a custom request configuration
 func WithConfig(cfg *request.Config) Option {
-        return func(c *Client) {
-                c.http = request.NewClient(cfg)
-        }
+	return func(c *Client) {
+		c.http = request.NewClient(cfg)
+	}
 }
 
 // NewClient creates a new EastMoney client
 // If no options are provided, it uses the default configuration
 func NewClient(opts ...Option) *Client {
-        c := &Client{
-                http: request.NewClient(request.DefaultConfig()),
-        }
-        for _, opt := range opts {
-                opt(c)
-        }
-        return c
+	c := &Client{
+		http: request.NewClient(request.DefaultConfig()),
+	}
+	for _, opt := range opts {
+		opt(c)
+	}
+	return c
 }
 
 func (c *Client) Close() {
-        c.http.Close()
+	c.http.Close()
 }
