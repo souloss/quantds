@@ -78,8 +78,10 @@ func ToTimespan(tf string) (string, int) {
 		return TimespanMinute, 15
 	case "30m":
 		return TimespanMinute, 30
-	case "60m", "1h":
+	case "60m", "1h", "1H":
 		return TimespanHour, 1
+	case "4H", "4h":
+		return TimespanHour, 4
 	case "1w":
 		return TimespanWeek, 1
 	case "1M":

@@ -62,10 +62,11 @@ const (
 
 // 加密货币交易所
 const (
-	ExchangeBinance  Exchange = "BINANCE"  // 币安
-	ExchangeCoinbase Exchange = "COINBASE" // Coinbase
-	ExchangeOKX      Exchange = "OKX"      // OKX
-	ExchangeBitget   Exchange = "BITGET"   // Bitget
+	ExchangeBinance        Exchange = "BINANCE"         // 币安
+	ExchangeBinanceFutures Exchange = "BINANCE_FUTURES" // 币安期货 (USDT-M永续合约)
+	ExchangeCoinbase       Exchange = "COINBASE"        // Coinbase
+	ExchangeOKX            Exchange = "OKX"             // OKX
+	ExchangeBitget         Exchange = "BITGET"          // Bitget
 )
 
 // 外汇交易所/平台
@@ -84,6 +85,12 @@ const (
 	ExchangeCFFEX Exchange = "CFFEX" // 中金所
 	ExchangeINE   Exchange = "INE"   // 上期能源
 	ExchangeGFEX  Exchange = "GFEX"  // 广期所
+	// 国际期货
+	ExchangeCME   Exchange = "CME"   // 芝加哥商品交易所
+	ExchangeCBOT  Exchange = "CBOT"  // 芝加哥期货交易所
+	ExchangeNYMEX Exchange = "NYMEX" // 纽约商品交易所
+	ExchangeCOMEX Exchange = "COMEX" // 纽约金属交易所
+	ExchangeICE   Exchange = "ICE"   // 洲际交易所
 )
 
 // ========== 市场元数据配置 ==========
@@ -168,7 +175,7 @@ var MarketConfigs = map[Market]MarketConfig{
 		Market:          MarketFutures,
 		DefaultExchange: ExchangeSHFE,
 		CodeRules: CodeRules{
-			MinLength:    3,
+			MinLength:    2,
 			MaxLength:    20,
 			AllowLetters: true,
 			AllowDigits:  true, // 包含到期月份
@@ -299,6 +306,15 @@ func (s *Symbol) SmartParse(code string) error {
 		return nil
 	}
 
+	// 期货：Yahoo Finance 格式 (GC=F, CL=F, ES=F 等) 或 CME 格式 (ES1!, NQ1!)
+	if strings.HasSuffix(code, "=F") || strings.HasSuffix(code, "1!") || strings.HasSuffix(code, "2!") {
+		s.Market = MarketFutures
+		s.Exchange = ExchangeCME
+		s.AssetType = AssetTypeFutures
+		s.Standard = fmt.Sprintf("%s.%s.%s", s.Code, s.Market, s.Exchange)
+		return nil
+	}
+
 	// 加密货币：非6位纯字母的 quote suffix 匹配
 	if base, quote, ok := MatchCryptoQuoteSuffix(code); ok {
 		s.Code = base + quote
@@ -382,6 +398,8 @@ func deriveMarketFromExchange(ex Exchange) Market {
 		return MarketHK
 	case ExchangeNYSE, ExchangeNASDAQ, ExchangeAMEX, ExchangeOTC:
 		return MarketUS
+	case ExchangeBinanceFutures:
+		return MarketFutures
 	default:
 		if strings.HasPrefix(string(ex), "BINANCE") ||
 			strings.HasPrefix(string(ex), "COINBASE") ||
@@ -389,7 +407,16 @@ func deriveMarketFromExchange(ex Exchange) Market {
 			return MarketCrypto
 		}
 		if strings.HasPrefix(string(ex), "SHFE") ||
-			strings.HasPrefix(string(ex), "CME") {
+			strings.HasPrefix(string(ex), "CME") ||
+			strings.HasPrefix(string(ex), "CBOT") ||
+			strings.HasPrefix(string(ex), "NYMEX") ||
+			strings.HasPrefix(string(ex), "COMEX") ||
+			strings.HasPrefix(string(ex), "ICE") ||
+			strings.HasPrefix(string(ex), "DCE") ||
+			strings.HasPrefix(string(ex), "CZCE") ||
+			strings.HasPrefix(string(ex), "CFFEX") ||
+			strings.HasPrefix(string(ex), "INE") ||
+			strings.HasPrefix(string(ex), "GFEX") {
 			return MarketFutures
 		}
 		return MarketUS // 默认

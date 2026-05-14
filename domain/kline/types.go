@@ -18,7 +18,9 @@ const (
 	Timeframe5m  Timeframe = "5m"  // 5分钟
 	Timeframe15m Timeframe = "15m" // 15分钟
 	Timeframe30m Timeframe = "30m" // 30分钟
-	Timeframe60m Timeframe = "60m" // 60分钟
+	Timeframe60m Timeframe = "60m" // 60分钟 (兼容旧值)
+	Timeframe1H  Timeframe = "1H"  // 1小时
+	Timeframe4H  Timeframe = "4H"  // 4小时
 	Timeframe1d  Timeframe = "1d"  // 日线
 	Timeframe1w  Timeframe = "1w"  // 周线
 	Timeframe1M  Timeframe = "1M"  // 月线
@@ -44,11 +46,13 @@ const (
 
 // Request represents a K-line data request.
 type Request struct {
-	Symbol    string     // 标的代码 (e.g., "000001.SZ", "600519.SH")
-	Timeframe Timeframe  // K线周期
-	StartTime time.Time  // 起始时间
-	EndTime   time.Time  // 结束时间
-	Adjust    AdjustType // 复权类型
+	Symbol     string     // 标的代码 (e.g., "000001.SZ", "600519.SH")
+	Timeframe  Timeframe  // K线周期
+	StartTime  time.Time  // 起始时间
+	EndTime    time.Time  // 结束时间
+	Limit      int        // 返回K线条数上限 (0表示不限)
+	BeforeTime time.Time  // 分页游标：返回该时间之前的K线
+	Adjust     AdjustType // 复权类型
 }
 
 // CacheKey returns the cache key for the request.

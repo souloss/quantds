@@ -102,3 +102,97 @@ func (a *SpotAdapter) Fetch(ctx context.Context, req spot.Request) (spot.Respons
 }
 
 var _ manager.Provider[spot.Request, spot.Response] = (*SpotAdapter)(nil)
+
+// FuturesSpotAdapter adapts Binance Futures real-time ticker data
+type FuturesSpotAdapter struct {
+	client *binance.Client
+}
+
+// NewFuturesSpotAdapter creates a new spot adapter for Binance Futures
+func NewFuturesSpotAdapter(client *binance.Client) *FuturesSpotAdapter {
+	return &FuturesSpotAdapter{client: client}
+}
+
+// Name returns the adapter name
+func (a *FuturesSpotAdapter) Name() string {
+	return FuturesName
+}
+
+// SupportedMarkets returns supported markets
+func (a *FuturesSpotAdapter) SupportedMarkets() []domain.Market {
+	return futuresSupportedMarkets
+}
+
+// CanHandle checks if the adapter can handle the symbol
+func (a *FuturesSpotAdapter) CanHandle(symbol string) bool {
+	var sym domain.Symbol
+	if err := sym.Parse(symbol); err != nil {
+		return binance.IsCryptoSymbol(symbol)
+	}
+	for _, m := range futuresSupportedMarkets {
+		if sym.Market == m {
+			return true
+		}
+	}
+	return false
+}
+
+// Fetch retrieves real-time quotes from Binance Futures
+func (a *FuturesSpotAdapter) Fetch(ctx context.Context, req spot.Request) (spot.Response, *manager.RequestTrace, error) {
+	trace := manager.NewRequestTrace(FuturesName)
+
+	// Convert symbols to Binance format
+	symbols := make([]string, 0, len(req.Symbols))
+	for _, s := range req.Symbols {
+		symbol, err := binance.ToBinanceSymbol(s)
+		if err != nil {
+			continue
+		}
+		symbols = append(symbols, symbol)
+	}
+
+	quotes := make([]spot.Quote, 0)
+
+	// Get ticker data for each symbol
+	for _, symbol := range symbols {
+		result, record, err := a.client.GetTicker24hr(ctx, &binance.TickerParams{
+			Symbol: symbol,
+		})
+		trace.AddRequest(record)
+
+		if err != nil {
+			continue
+		}
+
+		for _, t := range result.Tickers {
+			quotes = append(quotes, spot.Quote{
+				Symbol:     binance.FromBinanceSymbol(t.Symbol),
+				Name:       t.Symbol,
+				Latest:     t.LastPrice,
+				Open:       t.OpenPrice,
+				High:       t.HighPrice,
+				Low:        t.LowPrice,
+				PreClose:   t.PrevClosePrice,
+				Change:     t.PriceChange,
+				ChangeRate: t.PriceChangePercent,
+				Volume:     t.Volume,
+				Turnover:   t.QuoteVolume,
+				Timestamp:  t.CloseTime,
+				BidPrice:   t.BidPrice,
+				BidVolume:  t.BidQty,
+				AskPrice:   t.AskPrice,
+				AskVolume:  t.AskQty,
+			})
+		}
+	}
+
+	trace.Finish()
+	return spot.Response{
+		Quotes:      quotes,
+		Total:       len(quotes),
+		Source:      FuturesName,
+		DataVersion: 1,
+	}, trace, nil
+}
+
+var _ manager.Provider[spot.Request, spot.Response] = (*FuturesSpotAdapter)(nil)

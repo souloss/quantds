@@ -50,8 +50,14 @@ func (c *Client) GetKline(ctx context.Context, params *KlineParams) (*KlineResul
 		params.Limit = 500
 	}
 
+	// Select API path based on baseURL (spot vs futures)
+	apiPath := KlineAPI
+	if c.baseURL == FuturesBaseURL {
+		apiPath = FuturesKlineAPI
+	}
+
 	url := fmt.Sprintf("%s%s?symbol=%s&interval=%s&limit=%d",
-		BaseURL, KlineAPI, params.Symbol, params.Interval, params.Limit)
+		c.baseURL, apiPath, params.Symbol, params.Interval, params.Limit)
 
 	if !params.StartTime.IsZero() {
 		url += fmt.Sprintf("&startTime=%d", params.StartTime.UnixMilli())
@@ -144,8 +150,10 @@ func ToInterval(tf string) string {
 		return Interval15m
 	case "30m":
 		return Interval30m
-	case "60m", "1h":
+	case "60m", "1h", "1H":
 		return Interval1h
+	case "4h", "4H":
+		return Interval4h
 	case "1d", "":
 		return Interval1d
 	case "1w":

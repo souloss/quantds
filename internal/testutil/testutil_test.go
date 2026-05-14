@@ -108,9 +108,9 @@ func TestRequireNonZeroData(t *testing.T) {
 
 func TestRequireDataConsistency(t *testing.T) {
 	tests := []struct {
-		name        string
+		name                   string
 		open, high, low, close float64
-		shouldFail  bool
+		shouldFail             bool
 	}{
 		{"valid", 10, 12, 9, 11, false},
 		{"high < low", 10, 8, 12, 11, true},

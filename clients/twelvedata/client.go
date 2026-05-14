@@ -32,6 +32,7 @@ const (
 	Interval15min  = "15min"
 	Interval30min  = "30min"
 	Interval1h     = "1h"
+	Interval4h     = "4h"
 	Interval1day   = "1day"
 	Interval1week  = "1week"
 	Interval1month = "1month"
@@ -87,8 +88,10 @@ func ToInterval(tf string) string {
 		return Interval15min
 	case "30m":
 		return Interval30min
-	case "60m", "1h":
+	case "60m", "1h", "1H":
 		return Interval1h
+	case "4H", "4h":
+		return Interval4h
 	case "1d", "":
 		return Interval1day
 	case "1w":

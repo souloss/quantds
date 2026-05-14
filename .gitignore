@@ -1,0 +1,43 @@
+# Binaries
+dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output
+*.out
+
+# Go workspace
+go.work
+
+# Dependency directories
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node.js / CCXT (testing artifacts, not part of Go project)
+node_modules/
+package.json
+package-lock.json
+.npmrc
+
+# Claude Code plans
+PLAN.md
+
+# Environment
+.env
+.env.local

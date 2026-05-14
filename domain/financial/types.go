@@ -68,11 +68,14 @@ type FinancialData struct {
 	Revenue            float64 // 营业收入
 	TotalOperatingCost float64 // 营业总成本
 	OperatingCost      float64 // 营业成本
+	CostOfRevenue      float64 // 营业成本 (US stock)
 	GrossProfit        float64 // 毛利润
 	ResearchExpense    float64 // 研发费用
+	SellingExpense     float64 // 销售和管理费用 (US stock SGA)
 	SalesExpense       float64 // 销售费用
 	AdminExpense       float64 // 管理费用
 	FinancialExpense   float64 // 财务费用
+	InterestExpense    float64 // 利息支出 (US stock)
 	OperatingProfit    float64 // 营业利润
 	TotalProfit        float64 // 利润总额
 	NetProfit          float64 // 净利润
@@ -94,13 +97,21 @@ type FinancialData struct {
 	CapitalReserve        float64 // 资本公积
 	SurplusReserve        float64 // 盈余公积
 	UndistributedProfit   float64 // 未分配利润
+	CashAndEquivalents    float64 // 现金及等价物 (US stock)
+	Inventory             float64 // 存货 (US stock)
+	AccountsReceivable    float64 // 应收账款 (US stock)
+	LongTermDebt          float64 // 长期负债 (US stock)
+	ShortTermDebt         float64 // 短期负债 (US stock)
 
 	// Cash Flow Statement Items
-	OperatingCashFlow float64 // 经营活动现金流
-	InvestingCashFlow float64 // 投资活动现金流
-	FinancingCashFlow float64 // 筹资活动现金流
-	NetCashFlow       float64 // 现金净增加额
-	CashEquivalents   float64 // 期末现金等价物
+	OperatingCashFlow  float64 // 经营活动现金流
+	InvestingCashFlow  float64 // 投资活动现金流
+	FinancingCashFlow  float64 // 筹资活动现金流
+	NetCashFlow        float64 // 现金净增加额
+	CashEquivalents    float64 // 期末现金等价物
+	Depreciation       float64 // 折旧与摊销 (US stock)
+	CapitalExpenditure float64 // 资本支出 (US stock)
+	FreeCashFlow       float64 // 自由现金流 (US stock)
 
 	// Financial Indicators
 	ROE                float64 // 净资产收益率 (%)

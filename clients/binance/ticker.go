@@ -45,7 +45,13 @@ type TickerData struct {
 
 // GetTicker24hr retrieves 24hr ticker data
 func (c *Client) GetTicker24hr(ctx context.Context, params *TickerParams) (*TickerResult, *request.Record, error) {
-	url := fmt.Sprintf("%s%s", BaseURL, Ticker24hrAPI)
+	// Select API path based on baseURL (spot vs futures)
+	apiPath := Ticker24hrAPI
+	if c.baseURL == FuturesBaseURL {
+		apiPath = FuturesTicker24hrAPI
+	}
+
+	url := fmt.Sprintf("%s%s", c.baseURL, apiPath)
 	if params.Symbol != "" {
 		url += fmt.Sprintf("?symbol=%s", params.Symbol)
 	}

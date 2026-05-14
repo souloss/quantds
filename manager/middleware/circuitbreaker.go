@@ -15,8 +15,8 @@ type CircuitBreakerState int
 
 const (
 	CircuitClosed   CircuitBreakerState = iota // Normal operation
-	CircuitOpen                                 // Rejecting all requests
-	CircuitHalfOpen                             // Testing if provider recovered
+	CircuitOpen                                // Rejecting all requests
+	CircuitHalfOpen                            // Testing if provider recovered
 )
 
 func (s CircuitBreakerState) String() string {

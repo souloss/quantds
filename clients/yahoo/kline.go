@@ -160,11 +160,13 @@ func ToInterval(tf string) string {
 		return Interval15m
 	case "30m":
 		return Interval30m
-	case "60m":
+	case "60m", "1H", "1h":
 		return Interval60m
-	case "1d", "":
+	case "4H", "4h":
+		return Interval4h
+	case "1d", "1D", "":
 		return Interval1d
-	case "1w":
+	case "1w", "1W":
 		return Interval1w
 	case "1M":
 		return Interval1M

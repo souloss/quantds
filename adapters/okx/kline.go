@@ -157,8 +157,10 @@ func toOKXBar(tf kline.Timeframe) string {
 		return "15m"
 	case kline.Timeframe30m:
 		return "30m"
-	case kline.Timeframe60m:
+	case kline.Timeframe60m, kline.Timeframe1H:
 		return "1H"
+	case kline.Timeframe4H:
+		return "4H"
 	case kline.Timeframe1d:
 		return "1D"
 	case kline.Timeframe1w:

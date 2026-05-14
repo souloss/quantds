@@ -332,8 +332,10 @@ func TestCircuitBreakerFromConfig_Enabled(t *testing.T) {
 	cb := CircuitBreakerFromConfig[string, string](cfg)
 
 	next := &mockProvider[string, string]{
-		name:  "test",
-		fetch: func(ctx context.Context, req string) (string, *manager.RequestTrace, error) { return "", nil, errTransient },
+		name: "test",
+		fetch: func(ctx context.Context, req string) (string, *manager.RequestTrace, error) {
+			return "", nil, errTransient
+		},
 	}
 
 	wrapped := cb(next)

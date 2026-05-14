@@ -20,6 +20,7 @@ import (
 	polygonadapter "github.com/souloss/quantds/adapters/polygon"
 	sinaadapter "github.com/souloss/quantds/adapters/sina"
 	sseadapter "github.com/souloss/quantds/adapters/sse"
+	symbolnameadapter "github.com/souloss/quantds/adapters/symbolname"
 	szseadapter "github.com/souloss/quantds/adapters/szse"
 	tencentadapter "github.com/souloss/quantds/adapters/tencent"
 	tushareadapter "github.com/souloss/quantds/adapters/tushare"
@@ -521,6 +522,107 @@ func (s *Service) initManagers() {
 			manager.WithPriority(PriorityMedium),
 		),
 	)
+
+	// ========== 期货 (Futures) ==========
+	// K线 - 支持 binance_futures, yahoo
+	s.klineManagers[domain.MarketFutures] = manager.NewManager[kline.Request, kline.Response](
+		manager.WithTwoLevelCache[kline.Request, kline.Response](time.Minute, CacheTTLKline),
+		manager.WithMetrics[kline.Request, kline.Response](s.metrics),
+		manager.WithProvider[kline.Request, kline.Response](
+			applyMiddlewareFromConfig(s, "binance_futures", binanceadapter.NewFuturesKlineAdapter(binanceclient.NewClient(binanceclient.WithHTTPClient(s.httpClient), binanceclient.WithFutures()))),
+			manager.WithPriority(PriorityHighest),
+		),
+		manager.WithProvider[kline.Request, kline.Response](
+			yahooadapter.NewKlineAdapter(yahooclient.NewClient(yahooclient.WithHTTPClient(s.httpClient))),
+			manager.WithPriority(PriorityHigh),
+		),
+	)
+
+	// 实时行情 - 支持 binance_futures, yahoo
+	s.spotManagers[domain.MarketFutures] = manager.NewManager[spot.Request, spot.Response](
+		manager.WithTwoLevelCache[spot.Request, spot.Response](time.Minute, CacheTTLSpot),
+		manager.WithMetrics[spot.Request, spot.Response](s.metrics),
+		manager.WithProvider[spot.Request, spot.Response](
+			applyMiddlewareFromConfig(s, "binance_futures", binanceadapter.NewFuturesSpotAdapter(binanceclient.NewClient(binanceclient.WithHTTPClient(s.httpClient), binanceclient.WithFutures()))),
+			manager.WithPriority(PriorityHighest),
+		),
+		manager.WithProvider[spot.Request, spot.Response](
+			yahooadapter.NewSpotAdapter(yahooclient.NewClient(yahooclient.WithHTTPClient(s.httpClient))),
+			manager.WithPriority(PriorityHigh),
+		),
+	)
+
+	// 证券列表 - 支持 yahoo
+	s.instrumentManagers[domain.MarketFutures] = manager.NewManager[instrument.Request, instrument.Response](
+		manager.WithTwoLevelCache[instrument.Request, instrument.Response](time.Minute, CacheTTLList),
+		manager.WithMetrics[instrument.Request, instrument.Response](s.metrics),
+		manager.WithProvider[instrument.Request, instrument.Response](
+			yahooadapter.NewInstrumentAdapter(yahooclient.NewClient(yahooclient.WithHTTPClient(s.httpClient))),
+			manager.WithPriority(PriorityHighest),
+		),
+	)
+
+	// ========== 美股 Profile/Financial/Announcement (US) ==========
+	// 个股档案 - 支持 finnhub
+	s.profileManagers[domain.MarketUS] = manager.NewManager[profile.Request, profile.Response](
+		manager.WithTwoLevelCache[profile.Request, profile.Response](time.Minute, CacheTTLList),
+		manager.WithMetrics[profile.Request, profile.Response](s.metrics),
+		manager.WithProvider[profile.Request, profile.Response](
+			applyMiddlewareFromConfig(s, "finnhub", finnhubadapter.NewProfileAdapter(finnhubclient.NewClient())),
+			manager.WithPriority(PriorityHighest),
+		),
+	)
+
+	// ========== 加密货币/外汇/期货 个股档案 ==========
+	// 加密货币 (Crypto) - 支持 symbolname
+	s.profileManagers[domain.MarketCrypto] = manager.NewManager[profile.Request, profile.Response](
+		manager.WithTwoLevelCache[profile.Request, profile.Response](time.Minute, CacheTTLList),
+		manager.WithMetrics[profile.Request, profile.Response](s.metrics),
+		manager.WithProvider[profile.Request, profile.Response](
+			symbolnameadapter.NewCryptoProfileAdapter(),
+			manager.WithPriority(PriorityHighest),
+		),
+	)
+
+	// 外汇 (Forex) - 支持 symbolname
+	s.profileManagers[domain.MarketForex] = manager.NewManager[profile.Request, profile.Response](
+		manager.WithTwoLevelCache[profile.Request, profile.Response](time.Minute, CacheTTLList),
+		manager.WithMetrics[profile.Request, profile.Response](s.metrics),
+		manager.WithProvider[profile.Request, profile.Response](
+			symbolnameadapter.NewForexProfileAdapter(),
+			manager.WithPriority(PriorityHighest),
+		),
+	)
+
+	// 期货 (Futures) - 支持 symbolname
+	s.profileManagers[domain.MarketFutures] = manager.NewManager[profile.Request, profile.Response](
+		manager.WithTwoLevelCache[profile.Request, profile.Response](time.Minute, CacheTTLList),
+		manager.WithMetrics[profile.Request, profile.Response](s.metrics),
+		manager.WithProvider[profile.Request, profile.Response](
+			symbolnameadapter.NewFuturesProfileAdapter(),
+			manager.WithPriority(PriorityHighest),
+		),
+	)
+
+	// 财务数据 - 支持 finnhub
+	s.financialManagers[domain.MarketUS] = manager.NewManager[financial.Request, financial.Response](
+		manager.WithTwoLevelCache[financial.Request, financial.Response](time.Minute, CacheTTLList),
+		manager.WithMetrics[financial.Request, financial.Response](s.metrics),
+		manager.WithProvider[financial.Request, financial.Response](
+			applyMiddlewareFromConfig(s, "finnhub", finnhubadapter.NewFinancialAdapter(finnhubclient.NewClient())),
+			manager.WithPriority(PriorityHighest),
+		),
+	)
+
+	// 公告新闻 - 支持 finnhub
+	s.announcementManagers[domain.MarketUS] = manager.NewManager[announcement.Request, announcement.Response](
+		manager.WithTwoLevelCache[announcement.Request, announcement.Response](time.Minute, CacheTTLList),
+		manager.WithMetrics[announcement.Request, announcement.Response](s.metrics),
+		manager.WithProvider[announcement.Request, announcement.Response](
+			applyMiddlewareFromConfig(s, "finnhub", finnhubadapter.NewAnnouncementAdapter(finnhubclient.NewClient())),
+			manager.WithPriority(PriorityHighest),
+		),
+	)
 }
 
 // getMarketFromSymbol 从 symbol 解析市场。
@@ -800,9 +902,9 @@ func (s *Service) Config() *config.Config {
 
 // ProviderStatusEntry holds the status of a single provider.
 type ProviderStatusEntry struct {
-	Name               string
-	Market             domain.Market
-	Domain             string // "kline", "spot", "instrument", etc.
+	Name                string
+	Market              domain.Market
+	Domain              string // "kline", "spot", "instrument", etc.
 	CircuitBreakerState string // "closed", "open", "half-open"
 }
 
@@ -818,9 +920,9 @@ func (s *Service) ProviderStatus() []ProviderStatusEntry {
 				state = sp.CircuitBreakerState().String()
 			}
 			entries = append(entries, ProviderStatusEntry{
-				Name:               entry.Name,
-				Market:             market,
-				Domain:             "kline",
+				Name:                entry.Name,
+				Market:              market,
+				Domain:              "kline",
 				CircuitBreakerState: state,
 			})
 		}
@@ -834,9 +936,9 @@ func (s *Service) ProviderStatus() []ProviderStatusEntry {
 				state = sp.CircuitBreakerState().String()
 			}
 			entries = append(entries, ProviderStatusEntry{
-				Name:               entry.Name,
-				Market:             market,
-				Domain:             "spot",
+				Name:                entry.Name,
+				Market:              market,
+				Domain:              "spot",
 				CircuitBreakerState: state,
 			})
 		}
@@ -850,9 +952,9 @@ func (s *Service) ProviderStatus() []ProviderStatusEntry {
 				state = sp.CircuitBreakerState().String()
 			}
 			entries = append(entries, ProviderStatusEntry{
-				Name:               entry.Name,
-				Market:             market,
-				Domain:             "instrument",
+				Name:                entry.Name,
+				Market:              market,
+				Domain:              "instrument",
 				CircuitBreakerState: state,
 			})
 		}
@@ -866,9 +968,9 @@ func (s *Service) ProviderStatus() []ProviderStatusEntry {
 				state = sp.CircuitBreakerState().String()
 			}
 			entries = append(entries, ProviderStatusEntry{
-				Name:               entry.Name,
-				Market:             market,
-				Domain:             "profile",
+				Name:                entry.Name,
+				Market:              market,
+				Domain:              "profile",
 				CircuitBreakerState: state,
 			})
 		}
@@ -882,9 +984,9 @@ func (s *Service) ProviderStatus() []ProviderStatusEntry {
 				state = sp.CircuitBreakerState().String()
 			}
 			entries = append(entries, ProviderStatusEntry{
-				Name:               entry.Name,
-				Market:             market,
-				Domain:             "financial",
+				Name:                entry.Name,
+				Market:              market,
+				Domain:              "financial",
 				CircuitBreakerState: state,
 			})
 		}
@@ -898,9 +1000,9 @@ func (s *Service) ProviderStatus() []ProviderStatusEntry {
 				state = sp.CircuitBreakerState().String()
 			}
 			entries = append(entries, ProviderStatusEntry{
-				Name:               entry.Name,
-				Market:             market,
-				Domain:             "announcement",
+				Name:                entry.Name,
+				Market:              market,
+				Domain:              "announcement",
 				CircuitBreakerState: state,
 			})
 		}

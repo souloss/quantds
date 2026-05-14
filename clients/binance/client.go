@@ -40,13 +40,16 @@ import (
 
 // API endpoints
 const (
-	BaseURL         = "https://api.binance.com"
-	APIV3           = "/api/v3"
-	KlineAPI        = "/api/v3/klines"
-	Ticker24hrAPI   = "/api/v3/ticker/24hr"
-	TickerPriceAPI  = "/api/v3/ticker/price"
-	ExchangeInfoAPI = "/api/v3/exchangeInfo"
-	DepthAPI        = "/api/v3/depth"
+	BaseURL              = "https://api.binance.com"
+	FuturesBaseURL       = "https://fapi.binance.com"
+	APIV3                = "/api/v3"
+	KlineAPI             = "/api/v3/klines"
+	Ticker24hrAPI        = "/api/v3/ticker/24hr"
+	TickerPriceAPI       = "/api/v3/ticker/price"
+	ExchangeInfoAPI      = "/api/v3/exchangeInfo"
+	DepthAPI             = "/api/v3/depth"
+	FuturesKlineAPI      = "/fapi/v1/klines"
+	FuturesTicker24hrAPI = "/fapi/v1/ticker/24hr"
 )
 
 // HTTP headers for Binance API
@@ -85,7 +88,8 @@ const (
 
 // Client is the Binance API client
 type Client struct {
-	http request.Client
+	http    request.Client
+	baseURL string // Base URL: BaseURL for spot, FuturesBaseURL for futures
 }
 
 // Option is a function that configures the client
@@ -114,11 +118,19 @@ func WithConfig(cfg *request.Config) Option {
 	}
 }
 
+// WithFutures configures the client to use Binance Futures (USDT-M) API endpoints.
+func WithFutures() Option {
+	return func(c *Client) {
+		c.baseURL = FuturesBaseURL
+	}
+}
+
 // NewClient creates a new Binance client
 // If no options are provided, it uses the default configuration
 func NewClient(opts ...Option) *Client {
 	c := &Client{
-		http: request.NewClient(request.DefaultConfig()),
+		http:    request.NewClient(request.DefaultConfig()),
+		baseURL: BaseURL,
 	}
 	for _, opt := range opts {
 		opt(c)

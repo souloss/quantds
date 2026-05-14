@@ -61,6 +61,7 @@ const (
 	Interval15m = "15m"
 	Interval30m = "30m"
 	Interval60m = "60m"
+	Interval4h  = "4h"
 	Interval1d  = "1d"
 	Interval1w  = "1wk"
 	Interval1M  = "1mo"

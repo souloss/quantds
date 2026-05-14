@@ -13,6 +13,9 @@ const (
 	QuoteAPI        = "/quote"
 	StockCandleAPI  = "/stock/candle"
 	StockSymbolAPI  = "/stock/symbol"
+	Profile2API     = "/stock/profile2"
+	FinancialsAPI   = "/stock/financials"
+	CompanyNewsAPI  = "/company-news"
 	ForexRatesAPI   = "/forex/rates"
 	ForexCandleAPI  = "/forex/candle"
 	ForexSymbolAPI  = "/forex/symbol"
@@ -94,7 +97,7 @@ func ToResolution(tf string) string {
 		return Res15
 	case "30m":
 		return Res30
-	case "60m", "1h":
+	case "60m", "1h", "1H":
 		return Res60
 	case "1d", "":
 		return ResD
